@@ -1,0 +1,115 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String   @id @default(cuid())
+  walletAddress  String   @unique
+  displayName    String?
+  phone          String?
+  email          String?
+  country        String?
+  preferredAsset String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organizedCircles Circle[]       @relation("OrganizerCircles")
+  memberships      CircleMember[]
+  contributions    Contribution[]
+}
+
+model Circle {
+  id                 String       @id @default(cuid())
+  name               String
+  contractId         String?      @unique
+  organizerAddress   String
+  organizer          User         @relation("OrganizerCircles", fields: [organizerAddress], references: [walletAddress])
+  contributionAmount Float
+  escrowAsset        String
+  cycleLengthDays    Int
+  totalMembers       Int
+  currentCycle       Int          @default(0)
+  status             CircleStatus @default(PENDING)
+  inviteCode         String       @unique @default(cuid())
+  createdAt          DateTime     @default(now())
+  startedAt          DateTime?
+  completedAt        DateTime?
+
+  members CircleMember[]
+  cycles  Cycle[]
+}
+
+model CircleMember {
+  id                  String   @id @default(cuid())
+  circleId            String
+  circle              Circle   @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  walletAddress       String
+  user                User     @relation(fields: [walletAddress], references: [walletAddress])
+  payoutPosition      Int
+  joinedAt            DateTime @default(now())
+  securityDepositPaid Boolean  @default(false)
+  securityDepositTxHash String?
+
+  @@unique([circleId, walletAddress])
+  @@unique([circleId, payoutPosition])
+}
+
+model Cycle {
+  id                  String      @id @default(cuid())
+  circleId            String
+  circle              Circle      @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  cycleIndex          Int
+  recipientAddress    String
+  deadline            DateTime
+  disbursedAt         DateTime?
+  disbursementTxHash  String?
+  status              CycleStatus @default(OPEN)
+  createdAt           DateTime    @default(now())
+
+  contributions Contribution[]
+
+  @@unique([circleId, cycleIndex])
+}
+
+model Contribution {
+  id            String   @id @default(cuid())
+  cycleId       String
+  cycle         Cycle    @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  memberAddress String
+  member        User     @relation(fields: [memberAddress], references: [walletAddress])
+  amount        Float
+  asset         String
+  txHash        String   @unique
+  paidAt        DateTime @default(now())
+  isOnTime      Boolean
+}
+
+model AuthChallenge {
+  id             String   @id @default(cuid())
+  walletAddress  String
+  nonce          String   @unique
+  expiresAt      DateTime
+  used           Boolean  @default(false)
+  createdAt      DateTime @default(now())
+}
+
+enum CircleStatus {
+  PENDING
+  ACTIVE
+  COMPLETED
+  PAUSED
+}
+
+enum CycleStatus {
+  OPEN
+  DISBURSED
+  DEFAULTED
+}
