@@ -1,4 +1,4 @@
-import { Circle, Contribution } from '@diasporacircle/shared';
+import { Circle, Contribution } from '../types';
 
 /**
  * Track user events for analytics

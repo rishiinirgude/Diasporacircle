@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Circle } from '@diasporacircle/shared';
+import { Circle } from '../types';
 import { api } from '../lib/api';
 import { useWalletStore } from '../store/wallet.store';
 import { Plus, AlertCircle, Loader } from 'lucide-react';

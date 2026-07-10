@@ -1,18 +1,3 @@
 {
-  "version": 2,
-  "buildCommand": "npm install --prefix packages/frontend && npm run build --prefix packages/frontend",
-  "outputDirectory": "packages/frontend/dist",
-  "framework": "vite",
-  "regions": ["sfo1"],
-  "env": {
-    "VITE_API_URL": {
-      "description": "Backend API URL (e.g., http://localhost:3001/api or https://your-api.com/api)"
-    }
-  },
-  "rewrites": [
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
-  ]
+  "version": 2
 }

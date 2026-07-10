@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Circle } from '@diasporacircle/shared';
+import { Circle } from '../types';
 import { api } from '../lib/api';
 
 export default function CircleDetail() {

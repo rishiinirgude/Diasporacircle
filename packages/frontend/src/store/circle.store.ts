@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Circle } from '@diasporacircle/shared';
+import { Circle } from '../types';
 
 interface CircleState {
   circles: Circle[];
