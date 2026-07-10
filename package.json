@@ -1,0 +1,10 @@
+{
+  "name": "diasporacircle",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel --filter backend --filter frontend run dev",
+    "test": "pnpm --recursive run test",
+    "lint": "pnpm --recursive run lint",
+    "build": "pnpm --recursive run build"
+  }
+}
