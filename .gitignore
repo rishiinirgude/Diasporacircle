@@ -131,3 +131,4 @@ __pycache__/
 *.key
 *.cert
 .env.production.local
+.vercel
