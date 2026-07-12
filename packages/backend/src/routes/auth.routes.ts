@@ -3,7 +3,7 @@ import { z } from 'zod';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { prisma } from '../config/db';
-import { verifyWalletSignature } from '../middleware/auth.middleware';
+import { verifyWalletSignature, walletAuthMiddleware, AuthRequest } from '../middleware/auth.middleware';
 import { StellarService } from '../services/stellar.service';
 
 const router = Router();
@@ -98,6 +98,43 @@ router.post('/verify', async (req, res: Response) => {
     res.json({ token });
   } catch (err) {
     console.error('Verify error:', err);
+    res.status(400).json({ error: 'Invalid request' });
+  }
+});
+
+const ProfileSchema = z.object({
+  displayName: z.string().min(1).max(100),
+  country: z.string().optional(),
+  phone: z.string().optional(),
+  email: z.string().email().optional().or(z.literal('')),
+});
+
+// Update user profile (requires auth)
+router.post('/profile', walletAuthMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const { displayName, country, phone, email } = ProfileSchema.parse(req.body);
+    const walletAddress = req.user!.walletAddress;
+
+    const user = await prisma.user.upsert({
+      where: { walletAddress },
+      update: {
+        displayName,
+        ...(country ? { country } : {}),
+        ...(phone ? { phone } : {}),
+        ...(email ? { email } : {}),
+      },
+      create: {
+        walletAddress,
+        displayName,
+        country,
+        phone,
+        email,
+      },
+    });
+
+    res.json({ ok: true, user });
+  } catch (err) {
+    console.error('Profile update error:', err);
     res.status(400).json({ error: 'Invalid request' });
   }
 });
