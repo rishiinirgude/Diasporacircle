@@ -45,10 +45,15 @@ app.use((_req, res) => {
 app.use(errorMiddleware);
 
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Backend running on port ${PORT}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`CORS origin: ${process.env.FRONTEND_URL || '*'}`);
-});
+
+// Only start listening when not in Vercel serverless environment
+if (process.env.VERCEL !== '1') {
+  app.listen(PORT, () => {
+    console.log(`Backend running on port ${PORT}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`CORS origin: ${process.env.FRONTEND_URL || '*'}`);
+  });
+}
 
 export default app;
+module.exports = app;

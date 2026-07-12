@@ -1,5 +1,5 @@
 import { prisma } from '../config/db';
-import { ContributionSubmitResponse } from '@diasporacircle/shared';
+import { ContributionSubmitResponse } from '../types/shared';
 import { SorobanService } from './soroban.service';
 
 export class ContributionService {

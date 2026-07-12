@@ -4,7 +4,7 @@ import {
   Circle,
   CircleMember,
   CircleStatus,
-} from '@diasporacircle/shared';
+} from '../types/shared';
 import { StellarService } from './stellar.service';
 
 export class CircleService {

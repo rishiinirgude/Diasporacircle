@@ -1,0 +1,20 @@
+{
+  "version": 2,
+  "buildCommand": "npm install && npm run vercel-build",
+  "builds": [
+    {
+      "src": "dist/app.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "dist/app.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "STELLAR_NETWORK": "testnet"
+  }
+}

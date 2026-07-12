@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import { walletAuthMiddleware, AuthRequest } from '../middleware/auth.middleware';
 import { CircleService } from '../services/circle.service';
-import { CreateCircleInput } from '@diasporacircle/shared';
+import { CreateCircleInput } from '../types/shared';
 
 const router = Router();
 

@@ -1,4 +1,4 @@
-import { ReputationProfile, ReputationTier, computeTier } from '@diasporacircle/shared';
+import { ReputationProfile, ReputationTier, computeTier } from '../types/shared';
 
 export class ReputationService {
   static async getProfile(walletAddress: string): Promise<ReputationProfile> {
