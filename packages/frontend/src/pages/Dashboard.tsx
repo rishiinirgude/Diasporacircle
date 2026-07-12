@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Circle } from '../types';
 import { api } from '../lib/api';
 import { useWalletStore } from '../store/wallet.store';
-import { Plus, AlertCircle, Loader } from 'lucide-react';
+import { analytics } from '../lib/analytics';
+import { Plus, AlertCircle, Loader, User, MessageSquare } from 'lucide-react';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ export default function Dashboard() {
       navigate('/');
       return;
     }
+    analytics.track('dashboard_viewed', { address });
 
     const fetchCircles = async () => {
       try {
@@ -45,12 +47,28 @@ export default function Dashboard() {
         <div className="max-w-6xl mx-auto px-4 md:px-6 py-6">
           <div className="flex justify-between items-center mb-2">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900">My Circles</h1>
-            <button
-              onClick={() => navigate('/circles/create')}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm md:text-base"
-            >
-              <Plus size={20} /> New Circle
-            </button>
+            <div className="flex items-center gap-2">
+              <Link
+                to="/feedback"
+                className="p-2 text-gray-500 hover:text-blue-600 transition"
+                title="Give Feedback"
+              >
+                <MessageSquare size={20} />
+              </Link>
+              <Link
+                to="/profile"
+                className="p-2 text-gray-500 hover:text-blue-600 transition"
+                title="Profile"
+              >
+                <User size={20} />
+              </Link>
+              <button
+                onClick={() => navigate('/circles/create')}
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition text-sm md:text-base"
+              >
+                <Plus size={20} /> New Circle
+              </button>
+            </div>
           </div>
           <p className="text-sm text-gray-600">
             Wallet: {address.substring(0, 8)}...{address.substring(address.length - 6)}
