@@ -67,7 +67,7 @@ export function useWallet() {
       let signedXdr = '';
       try {
         // Try signing with Freighter - build a minimal auth transaction
-        const { buildAuthTransaction } = await import('./walletAuth');
+        const { buildAuthTransaction } = await import('../lib/walletAuth');
         const xdr = await buildAuthTransaction(publicKey, nonce, networkPassphrase);
         signedXdr = await freighter.signTransaction(xdr, { networkPassphrase });
       } catch {
