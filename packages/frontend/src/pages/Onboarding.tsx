@@ -108,7 +108,7 @@ export default function Onboarding() {
                     <AlertCircle size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
                     <div>
                       <p className="text-red-800 text-sm font-medium">{connectError}</p>
-                      {connectError.includes('Freighter') && (
+                      {connectError.toLowerCase().includes('install') && (
                         <a
                           href="https://freighter.app"
                           target="_blank"
@@ -117,6 +117,11 @@ export default function Onboarding() {
                         >
                           Install Freighter <ExternalLink size={12} />
                         </a>
+                      )}
+                      {connectError.toLowerCase().includes('locked') && (
+                        <p className="text-amber-700 text-xs mt-1">
+                          Click the Freighter icon in your browser toolbar, unlock it, then try again.
+                        </p>
                       )}
                     </div>
                   </div>
