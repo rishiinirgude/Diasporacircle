@@ -1,39 +1,20 @@
+/**
+ * Wallet connection using @stellar/freighter-api official package.
+ * This is the correct way to talk to Freighter — it communicates
+ * via message passing to the extension, no window injection needed.
+ */
 import { useWalletStore } from '../store/wallet.store';
 import { api } from '../lib/api';
 import { analytics } from '../lib/analytics';
 
-/**
- * Freighter injects itself as window.freighterApi (NOT window.freighter).
- * Ref: https://stellar.stackexchange.com/questions/5916
- * API: isConnected(), getPublicKey(), signTransaction(), getNetwork()
- */
-interface FreighterAPI {
-  getPublicKey(): Promise<string>;
-  signTransaction(
-    xdr: string,
-    opts?: { network?: string; networkPassphrase?: string }
-  ): Promise<string>;
-  isConnected(): Promise<boolean>;
-  getNetwork(): Promise<string>;
-}
-
-declare global {
-  interface Window {
-    freighterApi?: FreighterAPI;
-    freighter?: FreighterAPI; // older versions
+// Dynamic import so it doesn't break SSR/build if package is missing
+async function getFreighterApi() {
+  try {
+    const freighter = await import('@stellar/freighter-api');
+    return freighter;
+  } catch {
+    return null;
   }
-}
-
-// Wait up to 3s for Freighter to inject — it loads after the page
-async function waitForFreighter(timeoutMs = 3000): Promise<FreighterAPI | null> {
-  const start = Date.now();
-  while (Date.now() - start < timeoutMs) {
-    // Freighter injects as window.freighterApi (primary) or window.freighter (legacy)
-    const api = window.freighterApi ?? window.freighter ?? null;
-    if (api) return api;
-    await new Promise((r) => setTimeout(r, 150));
-  }
-  return null;
 }
 
 export function useWallet() {
@@ -53,55 +34,75 @@ export function useWallet() {
     try {
       setConnecting(true);
 
-      // Wait for Freighter to inject into the page
-      const freighter = await waitForFreighter(3000);
+      const freighter = await getFreighterApi();
 
       if (!freighter) {
         return {
           success: false,
-          error:
-            'Freighter not detected. Make sure it is enabled for this site — click the Freighter icon in your browser toolbar and allow access.',
+          error: 'Could not load Freighter API. Please install the Freighter browser extension from freighter.app',
         };
       }
 
-      // Check if unlocked
+      // isConnected tells us if the extension is present and accessible
       let connected = false;
       try {
-        connected = await freighter.isConnected();
+        const result = await freighter.isConnected();
+        // In newer versions returns { isConnected: boolean }, older returns boolean
+        connected = typeof result === 'object'
+          ? (result as { isConnected: boolean }).isConnected
+          : (result as unknown as boolean);
       } catch {
-        // Some Freighter versions don't implement isConnected — assume true
-        connected = true;
+        // Treat error as not installed
+        return {
+          success: false,
+          error: 'Freighter extension not found. Please install it from freighter.app and refresh the page.',
+        };
       }
 
       if (!connected) {
         return {
           success: false,
-          error:
-            'Freighter is locked or not connected to this site. Click the Freighter icon, unlock it, and allow access to this site.',
+          error: 'Freighter is not connected. Open Freighter from your browser toolbar, unlock it, and try again.',
         };
       }
 
-      // Get the wallet's public key
-      const publicKey = await freighter.getPublicKey();
+      // Get the public key — this prompts the user in Freighter if needed
+      let publicKey = '';
+      try {
+        const result = await freighter.getPublicKey();
+        // Newer API returns { address: string }, older returns string directly
+        publicKey = typeof result === 'object'
+          ? (result as { address: string }).address ?? String(result)
+          : String(result);
+      } catch (err) {
+        return {
+          success: false,
+          error: 'Could not get wallet address. Make sure Freighter is unlocked and try again.',
+        };
+      }
+
       if (!publicKey) {
         return {
           success: false,
-          error: 'No public key returned. Make sure Freighter is set to Testnet.',
+          error: 'No wallet address returned. Make sure Freighter is set to Testnet.',
         };
       }
 
-      // Determine network
+      // Get network passphrase
       let networkPassphrase = 'Test SDF Network ; September 2015';
       try {
-        const network = await freighter.getNetwork();
-        if (network && !network.toLowerCase().includes('test')) {
+        const net = await freighter.getNetwork();
+        const networkStr = typeof net === 'object'
+          ? (net as { network: string }).network ?? String(net)
+          : String(net);
+        if (!networkStr.toLowerCase().includes('test')) {
           networkPassphrase = 'Public Global Stellar Network ; September 2015';
         }
       } catch {
         // default testnet
       }
 
-      // Request challenge nonce from backend (gracefully skip if backend is down)
+      // Request auth challenge from backend (skip gracefully if down)
       let nonce = `demo_${Date.now()}`;
       let useDemo = false;
       try {
@@ -113,20 +114,25 @@ export function useWallet() {
         useDemo = true;
       }
 
-      // Sign the auth transaction (or fall back to demo signature)
+      // Sign the auth transaction with Freighter
       let signedXdr = `demo_${nonce}_${publicKey}`;
       if (!useDemo) {
         try {
           const { buildAuthTransaction } = await import('../lib/walletAuth');
           const xdr = await buildAuthTransaction(publicKey, nonce, networkPassphrase);
-          signedXdr = await freighter.signTransaction(xdr, { networkPassphrase });
+          const signResult = await freighter.signTransaction(xdr, {
+            networkPassphrase,
+          });
+          signedXdr = typeof signResult === 'object'
+            ? (signResult as { signedTxXdr: string }).signedTxXdr ?? String(signResult)
+            : String(signResult);
         } catch {
-          // User rejected or signing failed — use demo token so UI still works
+          // User rejected or sign failed — use demo fallback
           signedXdr = `demo_${nonce}_${publicKey}`;
         }
       }
 
-      // Verify with backend and get JWT (fall back to demo token if unavailable)
+      // Get JWT from backend (fall back to demo token if backend is down)
       let jwt = `demo_token_${publicKey}_${Date.now()}`;
       if (!useDemo) {
         try {
@@ -137,7 +143,7 @@ export function useWallet() {
           });
           jwt = res.token;
         } catch {
-          // Backend down — demo mode, wallet still connects in UI
+          // Backend unavailable — demo token, UI still works
         }
       }
 
@@ -163,23 +169,27 @@ export function useWallet() {
   };
 
   const signTransaction = async (xdr: string): Promise<string> => {
-    const freighter = await waitForFreighter(2000);
-    if (!freighter) throw new Error('Freighter not available');
+    const freighter = await getFreighterApi();
+    if (!freighter) throw new Error('Freighter API not available');
     let networkPassphrase = 'Test SDF Network ; September 2015';
     try {
-      const network = await freighter.getNetwork();
-      if (network && !network.toLowerCase().includes('test')) {
+      const net = await freighter.getNetwork();
+      const networkStr = typeof net === 'object'
+        ? (net as { network: string }).network ?? ''
+        : String(net);
+      if (!networkStr.toLowerCase().includes('test')) {
         networkPassphrase = 'Public Global Stellar Network ; September 2015';
       }
     } catch { /* default testnet */ }
-    return freighter.signTransaction(xdr, { networkPassphrase });
+
+    const result = await freighter.signTransaction(xdr, { networkPassphrase });
+    return typeof result === 'object'
+      ? (result as { signedTxXdr: string }).signedTxXdr ?? String(result)
+      : String(result);
   };
 
-  const isFreighterInstalled = (): boolean => {
-    // Synchronous check — may be false on first render before injection
-    // The async connect() is the reliable path
-    return !!(window.freighterApi ?? window.freighter);
-  };
+  // Always return true — let the async connect() handle detection
+  const isFreighterInstalled = (): boolean => true;
 
   return {
     address,
