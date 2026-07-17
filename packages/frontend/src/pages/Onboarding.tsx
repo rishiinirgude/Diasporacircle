@@ -160,21 +160,33 @@ export default function Onboarding() {
                 )}
 
                 <div className="mt-6 pt-6 border-t">
-                  <h3 className="text-sm font-semibold text-gray-700 mb-3">What is Freighter?</h3>
+                  <h3 className="text-sm font-semibold text-gray-700 mb-3">Troubleshooting</h3>
                   <ul className="space-y-2 text-sm text-gray-600">
                     <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-0.5">✓</span>
-                      Free browser extension wallet for Stellar
+                      <span className="text-blue-500 mt-0.5">1.</span>
+                      Click the Freighter icon in your browser toolbar
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-0.5">✓</span>
-                      Your keys never leave your device
+                      <span className="text-blue-500 mt-0.5">2.</span>
+                      Make sure you are unlocked and on <strong>Testnet</strong>
                     </li>
                     <li className="flex items-start gap-2">
-                      <span className="text-green-500 mt-0.5">✓</span>
-                      Works on testnet for free testing
+                      <span className="text-blue-500 mt-0.5">3.</span>
+                      If prompted, allow access to this site
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-blue-500 mt-0.5">4.</span>
+                      Then click Connect again
                     </li>
                   </ul>
+                  <a
+                    href="https://freighter.app"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-1 text-xs text-blue-600 hover:underline"
+                  >
+                    Don't have Freighter? Install it free <ExternalLink size={11} />
+                  </a>
                 </div>
               </div>
             )}
