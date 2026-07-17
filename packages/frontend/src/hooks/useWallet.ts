@@ -1,11 +1,14 @@
 /**
- * Freighter wallet integration following the official Stellar soroban-example-dapp pattern.
- * Source: https://github.com/stellar/soroban-example-dapp
- *
- * Key insight: setAllowed() is called directly as onClick handler (not awaited in async fn).
- * Then getUserInfo() returns { publicKey } once the user approves.
+ * Freighter wallet connection — official Stellar pattern.
+ * 
+ * Critical: setAllowed() MUST be called synchronously in the click handler.
+ * Browsers block extension popups if called inside async/await chains.
+ * 
+ * Pattern from: https://github.com/stellar/soroban-example-dapp
+ *   <button onClick={setAllowed}>Connect</button>
+ *   then getUserInfo() for the public key
  */
-import { setAllowed, getUserInfo, isConnected, getNetwork, signTransaction as freighterSign } from '@stellar/freighter-api';
+import { setAllowed, getUserInfo, getNetwork, signTransaction as freighterSign } from '@stellar/freighter-api';
 import { useWalletStore } from '../store/wallet.store';
 import { api } from '../lib/api';
 import { analytics } from '../lib/analytics';
@@ -21,30 +24,48 @@ export function useWallet() {
     disconnect: storeDisconnect,
   } = useWalletStore();
 
-  const isConnected_ = !!address && !!token;
+  const isConnected = !!address && !!token;
 
   /**
-   * Step 1: Call setAllowed() — this opens the Freighter "allow this site" popup.
-   * After approval, call getUserInfo() to get the public key.
+   * Returns the raw setAllowed function so it can be bound directly to onClick.
+   * This is critical — the popup only opens when triggered synchronously from a click.
    */
+  const getAllowHandler = () => setAllowed;
+
   const connect = async (): Promise<{ success: boolean; error?: string }> => {
     setConnecting(true);
     try {
-      // Trigger Freighter's "Connect to this site" popup
-      await setAllowed();
+      // Call setAllowed — this must happen as close to the user click as possible
+      // It opens the Freighter "grant access" popup
+      try {
+        await setAllowed();
+      } catch (e) {
+        const msg = String(e).toLowerCase();
+        if (msg.includes('not installed') || msg.includes('not found') || msg.includes('undefined')) {
+          return {
+            success: false,
+            error: 'Freighter not found. Install it from freighter.app, refresh the page, then try again.',
+          };
+        }
+        // Popup may have been blocked — try getUserInfo anyway
+        console.warn('setAllowed error (may still work):', e);
+      }
 
-      // Now fetch user info — returns { publicKey, ... }
+      // Small delay to let Freighter process the approval
+      await new Promise(r => setTimeout(r, 500));
+
+      // Get the user's public key
       const userInfo = await getUserInfo();
       const publicKey = userInfo?.publicKey ?? '';
 
       if (!publicKey) {
         return {
           success: false,
-          error: 'No wallet address found. Make sure Freighter is unlocked and set to Testnet, then try again.',
+          error: 'No wallet address found. Please unlock Freighter, set it to Testnet, and try again.',
         };
       }
 
-      // Get network
+      // Get network passphrase
       let networkPassphrase = 'Test SDF Network ; September 2015';
       try {
         const net = await getNetwork();
@@ -53,13 +74,12 @@ export function useWallet() {
         }
       } catch { /* default testnet */ }
 
-      // Auth with backend — gracefully skip if backend is not deployed yet
+      // Backend auth — graceful fallback if backend not deployed
       let jwt = `local_${publicKey}_${Date.now()}`;
       try {
         const { nonce } = await api.post<{ nonce: string }>('/auth/challenge', {
           walletAddress: publicKey,
         });
-
         let signedXdr = `demo_${nonce}_${publicKey}`;
         try {
           const { buildAuthTransaction } = await import('../lib/walletAuth');
@@ -68,7 +88,7 @@ export function useWallet() {
           signedXdr = typeof signed === 'object'
             ? (signed as { signedTxXdr: string }).signedTxXdr ?? String(signed)
             : String(signed);
-        } catch { /* fallback demo signature */ }
+        } catch { /* demo signature */ }
 
         const { token: backendJwt } = await api.post<{ token: string }>('/auth/verify', {
           walletAddress: publicKey,
@@ -76,7 +96,7 @@ export function useWallet() {
           nonce,
         });
         jwt = backendJwt;
-      } catch { /* backend not available — local token so UI still works */ }
+      } catch { /* backend not deployed — local token */ }
 
       setAddress(publicKey);
       setToken(jwt);
@@ -86,12 +106,10 @@ export function useWallet() {
       analytics.track('wallet_connected', { address: publicKey });
       return { success: true };
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      // User rejected or Freighter not installed
-      if (msg.toLowerCase().includes('not installed') || msg.toLowerCase().includes('not found')) {
-        return { success: false, error: 'Freighter not installed. Install it from freighter.app and refresh.' };
-      }
-      return { success: false, error: 'Connection failed. Make sure Freighter is installed and unlocked.' };
+      return {
+        success: false,
+        error: 'Connection failed. Make sure Freighter is installed, unlocked and set to Testnet.',
+      };
     } finally {
       setConnecting(false);
     }
@@ -118,5 +136,15 @@ export function useWallet() {
 
   const isFreighterInstalled = (): boolean => true;
 
-  return { address, token, isConnected: isConnected_, isConnecting, connect, disconnect, signTransaction, isFreighterInstalled };
+  return {
+    address,
+    token,
+    isConnected,
+    isConnecting,
+    connect,
+    disconnect,
+    signTransaction,
+    isFreighterInstalled,
+    getAllowHandler,
+  };
 }
