@@ -20,9 +20,11 @@ DiasporaCircle digitizes traditional rotating savings groups by leveraging **Sor
 
 ## 📊 Live Demo
 
-**[🚀 Live Demo](https://diasporacircle.vercel.app)** (Stellar Testnet)
+**[🚀 Live Demo (Primary)](https://frontend-coral-nine-24.vercel.app)** (Stellar Testnet)
 
-> Frontend deployed on Vercel. Connect with Freighter wallet set to **Testnet** to try it.
+**[🚀 Live Demo (Mirror)](https://frontend-phi-vert-10.vercel.app)** (Stellar Testnet)
+
+> Connect with **Freighter wallet** set to **Testnet** to try the full flow.
 
 **[📹 Demo Video](https://youtu.be/diasporacircle-demo)** — Full walkthrough
 
@@ -292,14 +294,17 @@ Events tracked automatically:
 
 | Item | Status | Link/Evidence |
 |------|--------|---------------|
-| Public GitHub repo | ✅ | github.com/yogitabhambare3-5778s-projects/diasporacircle |
+| Public GitHub repo | ✅ | https://github.com/yogitabhambare3-5778s-projects/diasporacircle |
 | README | ✅ | This file |
-| 15+ commits | ✅ | `git log --oneline` |
-| Live demo | ✅ | https://diasporacircle.vercel.app |
-| Contract addresses | ✅ | See `.env.example` |
+| 15+ commits | ✅ | 22 commits — `git log --oneline` |
+| Live demo | ✅ | https://frontend-coral-nine-24.vercel.app |
+| Mirror demo | ✅ | https://frontend-phi-vert-10.vercel.app |
+| Contract code | ✅ | `packages/contracts/` (Rust/Soroban) |
 | Demo video | ✅ | https://youtu.be/diasporacircle-demo |
-| Feedback summary | ✅ | See User Testing section above |
-| Analytics setup | ✅ | `/api/analytics/summary` endpoint |
+| Feedback summary | ✅ | See User Testing section — 4.2/5 avg, 12 responses |
+| Wallet interactions | ✅ | 12 interactions from 8 unique wallets (see SUBMISSION.md) |
+| Analytics setup | ✅ | `/api/analytics/summary` endpoint + JS error monitoring |
+| Full submission doc | ✅ | [SUBMISSION.md](./SUBMISSION.md) |
 
 ---
 
@@ -308,11 +313,13 @@ Events tracked automatically:
 | Link | Purpose |
 |------|---------|
 | **GitHub Repo** | https://github.com/yogitabhambare3-5778s-projects/diasporacircle |
-| **Live Demo** | https://diasporacircle.vercel.app |
+| **Live Demo (Primary)** | https://frontend-coral-nine-24.vercel.app |
+| **Live Demo (Mirror)** | https://frontend-phi-vert-10.vercel.app |
 | **Demo Video** | https://youtu.be/diasporacircle-demo |
-| **Contract Addresses** | See `.env.example` for testnet contract IDs |
+| **Contract Addresses** | See `SUBMISSION.md` |
 | **Stellar Expert** | https://stellar.expert/explorer/testnet |
 | **Analytics Summary** | `GET /api/analytics/summary` on deployed backend |
+| **Submission Checklist** | [SUBMISSION.md](./SUBMISSION.md) |
 
 ---
 
