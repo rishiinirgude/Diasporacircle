@@ -89,7 +89,7 @@ export default function Onboarding() {
             {/* STEP 1: Connect Wallet */}
             {step === 'connect' && (
               <div>
-                <div className="flex items-center gap-3 mb-6">
+                <div className="flex items-center gap-3 mb-5">
                   <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                     <Wallet size={20} className="text-blue-600" />
                   </div>
@@ -99,9 +99,28 @@ export default function Onboarding() {
                   </div>
                 </div>
 
-                <p className="text-gray-600 mb-6">
-                  Connect your Stellar wallet to get started. Your wallet is your identity — no password needed.
-                </p>
+                {/* Pre-connect checklist */}
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-5">
+                  <p className="text-sm font-semibold text-amber-900 mb-2">Before clicking Connect:</p>
+                  <ol className="space-y-1.5 text-sm text-amber-800">
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold flex-shrink-0">1.</span>
+                      Click the <strong>Freighter icon</strong> in your browser toolbar
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold flex-shrink-0">2.</span>
+                      <strong>Unlock</strong> Freighter with your password
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold flex-shrink-0">3.</span>
+                      Set network to <strong>Testnet</strong> (Settings → Network)
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="font-bold flex-shrink-0">4.</span>
+                      Then click the button below — Freighter will ask to <strong>allow this site</strong>
+                    </li>
+                  </ol>
+                </div>
 
                 {connectError && (
                   <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3">
@@ -113,15 +132,10 @@ export default function Onboarding() {
                           href="https://freighter.app"
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-blue-600 text-sm flex items-center gap-1 mt-1 hover:underline"
+                          className="text-blue-600 text-sm flex items-center gap-1 mt-2 hover:underline"
                         >
-                          Install Freighter <ExternalLink size={12} />
+                          Install Freighter free <ExternalLink size={12} />
                         </a>
-                      )}
-                      {connectError.toLowerCase().includes('locked') && (
-                        <p className="text-amber-700 text-xs mt-1">
-                          Click the Freighter icon in your browser toolbar, unlock it, then try again.
-                        </p>
                       )}
                     </div>
                   </div>
@@ -159,7 +173,7 @@ export default function Onboarding() {
                   </p>
                 )}
 
-                <div className="mt-6 pt-6 border-t">
+                <div className="mt-5 pt-5 border-t">
                   <h3 className="text-sm font-semibold text-gray-700 mb-3">Troubleshooting</h3>
                   <ul className="space-y-2 text-sm text-gray-600">
                     <li className="flex items-start gap-2">
