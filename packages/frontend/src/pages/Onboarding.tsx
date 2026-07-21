@@ -1,37 +1,84 @@
-import { useState } from 'react';
+/**
+ * Onboarding page — wallet connection using Stellar Wallets Kit v2
+ * The kit renders its own Connect button via createButton(domRef).
+ * We listen to STATE_UPDATED event to get the wallet address.
+ */
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Wallet, User, ChevronRight, AlertCircle,
-  Loader, CheckCircle,
-} from 'lucide-react';
-import { useWallet } from '../hooks/useWallet';
+import { User, ChevronRight, AlertCircle, Loader, CheckCircle } from 'lucide-react';
 import { useWalletStore } from '../store/wallet.store';
 import { api } from '../lib/api';
 import { analytics } from '../lib/analytics';
 
 type Step = 'connect' | 'profile' | 'done';
 
+// Load kit outside component so it initializes once
+let kitReady = false;
+async function setupKit(
+  container: HTMLElement,
+  onAddress: (addr: string) => void,
+  onError: (msg: string) => void
+) {
+  try {
+    const { StellarWalletsKit } = await import('@creit-tech/stellar-wallets-kit/sdk');
+    const { defaultModules } = await import('@creit-tech/stellar-wallets-kit/modules/utils');
+    const { KitEventType } = await import('@creit-tech/stellar-wallets-kit/types');
+
+    if (!kitReady) {
+      (StellarWalletsKit as unknown as { init(p: object): void }).init({
+        modules: (defaultModules as () => unknown[])(),
+      });
+      kitReady = true;
+    }
+
+    (StellarWalletsKit as unknown as { createButton(el: HTMLElement): void }).createButton(container);
+
+    const kit = StellarWalletsKit as unknown as {
+      on(ev: string, cb: (e: { payload?: { address?: string } }) => void): () => void;
+    };
+
+    const unsub = kit.on(KitEventType.STATE_UPDATED, (event) => {
+      const addr = event?.payload?.address;
+      if (addr) {
+        onAddress(addr);
+        unsub();
+      }
+    });
+  } catch (err) {
+    console.error('Kit setup error:', err);
+    onError('Failed to load wallet kit. Please refresh and try again.');
+  }
+}
+
 export default function Onboarding() {
   const navigate = useNavigate();
-  const { connect, isConnecting } = useWallet();
-  const { address, isConnected } = useWalletStore();
+  const { address, isConnected, setAddress, setToken } = useWalletStore();
+  const buttonRef = useRef<HTMLDivElement>(null);
 
   const [step, setStep] = useState<Step>(isConnected ? 'profile' : 'connect');
-  const [connectError, setConnectError] = useState<string | null>(null);
+  const [kitError, setKitError] = useState<string | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [form, setForm] = useState({ displayName: '', country: '', phone: '', email: '' });
 
-  const handleConnect = async () => {
-    setConnectError(null);
-    const result = await connect();
-    if (result.success) {
-      analytics.track('onboarding_wallet_connected');
-      setStep('profile');
-    } else {
-      setConnectError(result.error ?? 'Connection failed');
-    }
-  };
+  useEffect(() => {
+    if (step !== 'connect' || !buttonRef.current) return;
+
+    setupKit(
+      buttonRef.current,
+      (addr) => {
+        // Wallet connected — set a local token and move to profile
+        const jwt = `local_${addr}_${Date.now()}`;
+        setAddress(addr);
+        setToken(jwt);
+        localStorage.setItem('dc_token', jwt);
+        localStorage.setItem('dc_address', addr);
+        analytics.track('wallet_connected', { address: addr });
+        setStep('profile');
+      },
+      (err) => setKitError(err)
+    );
+  }, [step, buttonRef.current]);
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,7 +91,7 @@ export default function Onboarding() {
     try {
       await api.post('/auth/profile', form);
     } catch {
-      // backend may not be deployed — continue anyway
+      // backend may not be deployed — skip
     } finally {
       analytics.track('onboarding_profile_complete', { country: form.country });
       setStep('done');
@@ -85,8 +132,8 @@ export default function Onboarding() {
             {step === 'connect' && (
               <div>
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                    <Wallet size={20} className="text-blue-600" />
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">
+                    1
                   </div>
                   <div>
                     <h2 className="text-xl font-bold text-gray-900">Connect Your Wallet</h2>
@@ -95,46 +142,35 @@ export default function Onboarding() {
                 </div>
 
                 <p className="text-gray-600 mb-6 text-sm">
-                  Click the button below. A wallet selector will open — choose <strong>Freighter</strong> and approve the connection.
+                  Click the <strong>Connect Wallet</strong> button below. A wallet selector will appear — choose your wallet (e.g. Freighter) and approve.
                 </p>
 
-                {connectError && (
+                {kitError && (
                   <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3">
                     <AlertCircle size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-red-800 text-sm">{connectError}</p>
+                    <p className="text-red-800 text-sm">{kitError}</p>
                   </div>
                 )}
 
-                <button
-                  onClick={handleConnect}
-                  disabled={isConnecting}
-                  className="w-full py-3 bg-[#f59e0b] text-white rounded-lg font-semibold hover:bg-amber-500 transition disabled:opacity-60 flex items-center justify-center gap-2"
-                >
-                  {isConnecting ? (
-                    <>
-                      <Loader size={18} className="animate-spin" />
-                      Opening wallet selector...
-                    </>
-                  ) : (
-                    <>
-                      <Wallet size={18} />
-                      Connect Wallet
-                    </>
-                  )}
-                </button>
+                {/* The kit renders its button here */}
+                <div
+                  ref={buttonRef}
+                  id="swk-button-wrapper"
+                  className="flex justify-center"
+                />
 
-                <div className="mt-6 pt-5 border-t text-sm text-gray-500 space-y-1">
-                  <p className="font-medium text-gray-700">Supported wallets:</p>
-                  <p>Freighter · xBull · Albedo · Lobstr · Rabet</p>
+                <p className="text-center text-xs text-gray-400 mt-5">
+                  Supports Freighter · xBull · Albedo · Lobstr · Rabet
+                  <br />
                   <a
                     href="https://freighter.app"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline text-xs"
+                    className="text-blue-500 hover:underline"
                   >
-                    Install Freighter (free, Chrome/Firefox)
+                    Install Freighter (free)
                   </a>
-                </div>
+                </p>
               </div>
             )}
 
@@ -181,7 +217,6 @@ export default function Onboarding() {
                       required
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Country</label>
                     <select
@@ -200,7 +235,6 @@ export default function Onboarding() {
                       <option value="OTHER">Other</option>
                     </select>
                   </div>
-
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Phone (optional)</label>
                     <input
@@ -211,7 +245,6 @@ export default function Onboarding() {
                       className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Email (optional)</label>
                     <input
@@ -222,7 +255,6 @@ export default function Onboarding() {
                       className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                     />
                   </div>
-
                   <button
                     type="submit"
                     disabled={profileLoading}
