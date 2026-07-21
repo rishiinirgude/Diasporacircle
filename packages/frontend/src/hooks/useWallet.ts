@@ -1,17 +1,42 @@
 /**
- * Freighter wallet connection — official Stellar pattern.
- * 
- * Critical: setAllowed() MUST be called synchronously in the click handler.
- * Browsers block extension popups if called inside async/await chains.
- * 
- * Pattern from: https://github.com/stellar/soroban-example-dapp
- *   <button onClick={setAllowed}>Connect</button>
- *   then getUserInfo() for the public key
+ * Wallet hook using @creit.tech/stellar-wallets-kit
+ * This is the correct library per the project master prompt.
+ * It shows a built-in modal that works with Freighter, xBull, Albedo, Lobstr etc.
  */
-import { setAllowed, getUserInfo, getNetwork, signTransaction as freighterSign } from '@stellar/freighter-api';
+import { useEffect, useRef } from 'react';
 import { useWalletStore } from '../store/wallet.store';
 import { api } from '../lib/api';
 import { analytics } from '../lib/analytics';
+
+// Kit is loaded lazily to avoid SSR / build issues
+let kitInstance: unknown = null;
+
+async function getKit() {
+  if (kitInstance) return kitInstance as StellarWalletsKitInstance;
+
+  const { StellarWalletsKit, WalletNetwork, FREIGHTER_ID, FreighterModule } =
+    await import('@creit.tech/stellar-wallets-kit');
+
+  const kit = new StellarWalletsKit({
+    network: WalletNetwork.TESTNET,
+    selectedWalletId: FREIGHTER_ID,
+    modules: [new FreighterModule()],
+  });
+
+  kitInstance = kit;
+  return kit as StellarWalletsKitInstance;
+}
+
+interface StellarWalletsKitInstance {
+  openModal(opts: { onWalletSelected: (opt: { id: string }) => void }): void;
+  closeModal(): void;
+  setWallet(id: string): void;
+  getAddress(): Promise<{ address: string }>;
+  signTransaction(
+    xdr: string,
+    opts: { networkPassphrase: string; address: string }
+  ): Promise<{ signedTxXdr: string }>;
+}
 
 export function useWallet() {
   const {
@@ -26,75 +51,61 @@ export function useWallet() {
 
   const isConnected = !!address && !!token;
 
-  /**
-   * Returns the raw setAllowed function so it can be bound directly to onClick.
-   * This is critical — the popup only opens when triggered synchronously from a click.
-   */
-  const getAllowHandler = () => setAllowed;
-
   const connect = async (): Promise<{ success: boolean; error?: string }> => {
     setConnecting(true);
     try {
-      // Call setAllowed — this must happen as close to the user click as possible
-      // It opens the Freighter "grant access" popup
-      try {
-        await setAllowed();
-      } catch (e) {
-        const msg = String(e).toLowerCase();
-        if (msg.includes('not installed') || msg.includes('not found') || msg.includes('undefined')) {
-          return {
-            success: false,
-            error: 'Freighter not found. Install it from freighter.app, refresh the page, then try again.',
-          };
-        }
-        // Popup may have been blocked — try getUserInfo anyway
-        console.warn('setAllowed error (may still work):', e);
-      }
+      const kit = await getKit();
 
-      // Small delay to let Freighter process the approval
-      await new Promise(r => setTimeout(r, 500));
+      // Open the wallet selection modal — works with Freighter and others
+      await new Promise<void>((resolve, reject) => {
+        kit.openModal({
+          onWalletSelected: async (opt) => {
+            try {
+              kit.setWallet(opt.id);
+              resolve();
+            } catch (e) {
+              reject(e);
+            }
+          },
+        });
 
-      // Get the user's public key
-      const userInfo = await getUserInfo();
-      const publicKey = userInfo?.publicKey ?? '';
+        // Timeout after 2 minutes of no selection
+        setTimeout(() => reject(new Error('Wallet selection timed out')), 120_000);
+      });
+
+      // Get address from the selected wallet
+      const { address: publicKey } = await kit.getAddress();
 
       if (!publicKey) {
-        return {
-          success: false,
-          error: 'No wallet address found. Please unlock Freighter, set it to Testnet, and try again.',
-        };
+        return { success: false, error: 'No address returned from wallet.' };
       }
 
-      // Get network passphrase
-      let networkPassphrase = 'Test SDF Network ; September 2015';
-      try {
-        const net = await getNetwork();
-        if (net && !String(net).toLowerCase().includes('test')) {
-          networkPassphrase = 'Public Global Stellar Network ; September 2015';
-        }
-      } catch { /* default testnet */ }
-
-      // Backend auth — graceful fallback if backend not deployed
+      // Auth with backend — graceful fallback if not deployed
       let jwt = `local_${publicKey}_${Date.now()}`;
       try {
         const { nonce } = await api.post<{ nonce: string }>('/auth/challenge', {
           walletAddress: publicKey,
         });
+
         let signedXdr = `demo_${nonce}_${publicKey}`;
         try {
           const { buildAuthTransaction } = await import('../lib/walletAuth');
-          const xdr = await buildAuthTransaction(publicKey, nonce, networkPassphrase);
-          const signed = await freighterSign(xdr, { networkPassphrase });
-          signedXdr = typeof signed === 'object'
-            ? (signed as { signedTxXdr: string }).signedTxXdr ?? String(signed)
-            : String(signed);
-        } catch { /* demo signature */ }
+          const xdr = await buildAuthTransaction(
+            publicKey,
+            nonce,
+            'Test SDF Network ; September 2015'
+          );
+          const { signedTxXdr } = await kit.signTransaction(xdr, {
+            networkPassphrase: 'Test SDF Network ; September 2015',
+            address: publicKey,
+          });
+          signedXdr = signedTxXdr;
+        } catch { /* demo fallback */ }
 
-        const { token: backendJwt } = await api.post<{ token: string }>('/auth/verify', {
-          walletAddress: publicKey,
-          signature: signedXdr,
-          nonce,
-        });
+        const { token: backendJwt } = await api.post<{ token: string }>(
+          '/auth/verify',
+          { walletAddress: publicKey, signature: signedXdr, nonce }
+        );
         jwt = backendJwt;
       } catch { /* backend not deployed — local token */ }
 
@@ -106,9 +117,13 @@ export function useWallet() {
       analytics.track('wallet_connected', { address: publicKey });
       return { success: true };
     } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes('timed out')) {
+        return { success: false, error: 'Wallet selection was cancelled.' };
+      }
       return {
         success: false,
-        error: 'Connection failed. Make sure Freighter is installed, unlocked and set to Testnet.',
+        error: 'Could not connect wallet. Make sure Freighter is installed and unlocked.',
       };
     } finally {
       setConnecting(false);
@@ -117,21 +132,18 @@ export function useWallet() {
 
   const disconnect = () => {
     storeDisconnect();
+    kitInstance = null; // reset kit so next connect starts fresh
     analytics.track('wallet_disconnected');
   };
 
   const signTransaction = async (xdr: string): Promise<string> => {
-    let networkPassphrase = 'Test SDF Network ; September 2015';
-    try {
-      const net = await getNetwork();
-      if (net && !String(net).toLowerCase().includes('test')) {
-        networkPassphrase = 'Public Global Stellar Network ; September 2015';
-      }
-    } catch { /* default testnet */ }
-    const result = await freighterSign(xdr, { networkPassphrase });
-    return typeof result === 'object'
-      ? (result as { signedTxXdr: string }).signedTxXdr ?? String(result)
-      : String(result);
+    if (!address) throw new Error('Wallet not connected');
+    const kit = await getKit();
+    const { signedTxXdr } = await kit.signTransaction(xdr, {
+      networkPassphrase: 'Test SDF Network ; September 2015',
+      address,
+    });
+    return signedTxXdr;
   };
 
   const isFreighterInstalled = (): boolean => true;
@@ -145,6 +157,5 @@ export function useWallet() {
     disconnect,
     signTransaction,
     isFreighterInstalled,
-    getAllowHandler,
   };
 }

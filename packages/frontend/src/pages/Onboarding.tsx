@@ -2,9 +2,9 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Wallet, User, ChevronRight, AlertCircle,
-  Loader, CheckCircle, ExternalLink,
+  Loader, CheckCircle,
 } from 'lucide-react';
-import { setAllowed, getUserInfo } from '@stellar/freighter-api';
+import { useWallet } from '../hooks/useWallet';
 import { useWalletStore } from '../store/wallet.store';
 import { api } from '../lib/api';
 import { analytics } from '../lib/analytics';
@@ -13,88 +13,24 @@ type Step = 'connect' | 'profile' | 'done';
 
 export default function Onboarding() {
   const navigate = useNavigate();
-  const { address, isConnected, setAddress, setToken, setConnecting, isConnecting } =
-    useWalletStore();
+  const { connect, isConnecting } = useWallet();
+  const { address, isConnected } = useWalletStore();
 
   const [step, setStep] = useState<Step>(isConnected ? 'profile' : 'connect');
   const [connectError, setConnectError] = useState<string | null>(null);
-  const [awaitingApproval, setAwaitingApproval] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [form, setForm] = useState({ displayName: '', country: '', phone: '', email: '' });
 
-  /**
-   * Called directly on button click — setAllowed() MUST be in the synchronous
-   * call stack of a user gesture, otherwise browsers block the extension popup.
-   */
-  const handleConnectClick = () => {
+  const handleConnect = async () => {
     setConnectError(null);
-    setAwaitingApproval(true);
-    setConnecting(true);
-
-    // Call setAllowed synchronously from click handler
-    setAllowed()
-      .then(async () => {
-        // Freighter approved — now get the public key
-        try {
-          const userInfo = await getUserInfo();
-          const publicKey = (userInfo as { publicKey?: string })?.publicKey ?? '';
-
-          if (!publicKey) {
-            setConnectError(
-              'Freighter did not return an address. Make sure it is unlocked and set to Testnet.',
-            );
-            return;
-          }
-
-          // Use a local token since backend may not be deployed
-          const jwt = `local_${publicKey}_${Date.now()}`;
-          setAddress(publicKey);
-          setToken(jwt);
-          localStorage.setItem('dc_token', jwt);
-          localStorage.setItem('dc_address', publicKey);
-          analytics.track('wallet_connected', { address: publicKey });
-          setStep('profile');
-        } catch {
-          setConnectError(
-            'Could not read wallet address. Unlock Freighter, set network to Testnet, and try again.',
-          );
-        }
-      })
-      .catch((err: unknown) => {
-        const msg = String(err).toLowerCase();
-        if (msg.includes('not installed') || msg.includes('undefined') || msg.includes('not found')) {
-          setConnectError(
-            'Freighter not found. Install it from freighter.app, then refresh this page.',
-          );
-        } else if (msg.includes('rejected') || msg.includes('denied') || msg.includes('cancel')) {
-          setConnectError('You rejected the Freighter request. Click Connect and approve in Freighter.');
-        } else {
-          // setAllowed errored but Freighter may still have approved — try getting key anyway
-          getUserInfo()
-            .then((userInfo) => {
-              const publicKey = (userInfo as { publicKey?: string })?.publicKey ?? '';
-              if (publicKey) {
-                const jwt = `local_${publicKey}_${Date.now()}`;
-                setAddress(publicKey);
-                setToken(jwt);
-                localStorage.setItem('dc_token', jwt);
-                localStorage.setItem('dc_address', publicKey);
-                analytics.track('wallet_connected', { address: publicKey });
-                setStep('profile');
-              } else {
-                setConnectError('Could not connect. Open Freighter, unlock it, and try again.');
-              }
-            })
-            .catch(() => {
-              setConnectError('Could not connect. Open Freighter, unlock it, and try again.');
-            });
-        }
-      })
-      .finally(() => {
-        setAwaitingApproval(false);
-        setConnecting(false);
-      });
+    const result = await connect();
+    if (result.success) {
+      analytics.track('onboarding_wallet_connected');
+      setStep('profile');
+    } else {
+      setConnectError(result.error ?? 'Connection failed');
+    }
   };
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
@@ -130,11 +66,13 @@ export default function Onboarding() {
             {(['connect', 'profile', 'done'] as Step[]).map((s) => (
               <div
                 key={s}
-                className={`flex-1 h-1 ${
-                  (s === 'connect') ||
-                  (s === 'profile' && (step === 'profile' || step === 'done')) ||
-                  (s === 'done' && step === 'done')
-                    ? s === 'done' ? 'bg-green-500' : 'bg-blue-600'
+                className={`flex-1 h-1 transition-colors ${
+                  s === 'connect'
+                    ? 'bg-blue-600'
+                    : s === 'profile' && (step === 'profile' || step === 'done')
+                    ? 'bg-blue-600'
+                    : s === 'done' && step === 'done'
+                    ? 'bg-green-500'
                     : 'bg-gray-200'
                 }`}
               />
@@ -142,10 +80,11 @@ export default function Onboarding() {
           </div>
 
           <div className="p-6 md:p-8">
+
             {/* ── STEP 1: Connect ── */}
             {step === 'connect' && (
               <div>
-                <div className="flex items-center gap-3 mb-5">
+                <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
                     <Wallet size={20} className="text-blue-600" />
                   </div>
@@ -155,70 +94,47 @@ export default function Onboarding() {
                   </div>
                 </div>
 
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-5">
-                  <p className="text-sm font-semibold text-amber-900 mb-2">Do this first:</p>
-                  <ol className="space-y-1 text-sm text-amber-800">
-                    <li>1. Click the <strong>Freighter icon</strong> in your browser toolbar</li>
-                    <li>2. <strong>Unlock</strong> Freighter (enter password)</li>
-                    <li>3. Go to Settings → Network → select <strong>Testnet</strong></li>
-                    <li>4. Come back here and click Connect</li>
-                  </ol>
-                </div>
+                <p className="text-gray-600 mb-6 text-sm">
+                  Click the button below. A wallet selector will open — choose <strong>Freighter</strong> and approve the connection.
+                </p>
 
                 {connectError && (
                   <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3">
                     <AlertCircle size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-red-800 text-sm font-medium">{connectError}</p>
-                      {connectError.toLowerCase().includes('install') && (
-                        <a
-                          href="https://freighter.app"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 text-sm flex items-center gap-1 mt-2 hover:underline"
-                        >
-                          Install Freighter <ExternalLink size={12} />
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {awaitingApproval && (
-                  <div className="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-800 text-center animate-pulse">
-                    👆 A Freighter popup should appear — click <strong>Grant Access</strong>
+                    <p className="text-red-800 text-sm">{connectError}</p>
                   </div>
                 )}
 
                 <button
-                  onClick={handleConnectClick}
-                  disabled={isConnecting || awaitingApproval}
+                  onClick={handleConnect}
+                  disabled={isConnecting}
                   className="w-full py-3 bg-[#f59e0b] text-white rounded-lg font-semibold hover:bg-amber-500 transition disabled:opacity-60 flex items-center justify-center gap-2"
                 >
-                  {isConnecting || awaitingApproval ? (
+                  {isConnecting ? (
                     <>
                       <Loader size={18} className="animate-spin" />
-                      Connecting...
+                      Opening wallet selector...
                     </>
                   ) : (
                     <>
                       <Wallet size={18} />
-                      Connect with Freighter
+                      Connect Wallet
                     </>
                   )}
                 </button>
 
-                <p className="text-center text-xs text-gray-400 mt-4">
-                  Don't have Freighter?{' '}
+                <div className="mt-6 pt-5 border-t text-sm text-gray-500 space-y-1">
+                  <p className="font-medium text-gray-700">Supported wallets:</p>
+                  <p>Freighter · xBull · Albedo · Lobstr · Rabet</p>
                   <a
                     href="https://freighter.app"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-blue-500 hover:underline"
+                    className="text-blue-500 hover:underline text-xs"
                   >
-                    Install free
+                    Install Freighter (free, Chrome/Firefox)
                   </a>
-                </p>
+                </div>
               </div>
             )}
 
@@ -265,6 +181,7 @@ export default function Onboarding() {
                       required
                     />
                   </div>
+
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Country</label>
                     <select
@@ -283,6 +200,7 @@ export default function Onboarding() {
                       <option value="OTHER">Other</option>
                     </select>
                   </div>
+
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Phone (optional)</label>
                     <input
@@ -293,6 +211,7 @@ export default function Onboarding() {
                       className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                     />
                   </div>
+
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Email (optional)</label>
                     <input
@@ -303,6 +222,7 @@ export default function Onboarding() {
                       className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
                     />
                   </div>
+
                   <button
                     type="submit"
                     disabled={profileLoading}
