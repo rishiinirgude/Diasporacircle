@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, ChevronRight, AlertCircle, Loader, CheckCircle } from 'lucide-react';
-import { setupWalletButton } from '../hooks/useWallet';
+import { User, ChevronRight, AlertCircle, Loader, CheckCircle, ExternalLink, Wallet } from 'lucide-react';
+import { useWallet } from '../hooks/useWallet';
 import { useWalletStore } from '../store/wallet.store';
 import { api } from '../lib/api';
 import { analytics } from '../lib/analytics';
@@ -10,32 +10,25 @@ type Step = 'connect' | 'profile' | 'done';
 
 export default function Onboarding() {
   const navigate = useNavigate();
-  const { address, isConnected, setAddress, setToken } = useWalletStore();
-  const buttonRef = useRef<HTMLDivElement>(null);
+  const { connect, isConnecting } = useWallet();
+  const { address, isConnected } = useWalletStore();
 
   const [step, setStep] = useState<Step>(isConnected ? 'profile' : 'connect');
-  const [kitError, setKitError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [form, setForm] = useState({ displayName: '', country: '', phone: '', email: '' });
 
-  useEffect(() => {
-    if (step !== 'connect' || !buttonRef.current) return;
-
-    setupWalletButton(
-      buttonRef.current,
-      (addr) => {
-        const jwt = `local_${addr}_${Date.now()}`;
-        setAddress(addr);
-        setToken(jwt);
-        localStorage.setItem('dc_token', jwt);
-        localStorage.setItem('dc_address', addr);
-        analytics.track('wallet_connected', { address: addr });
-        setStep('profile');
-      },
-      setKitError
-    );
-  }, [step]);
+  const handleConnect = async () => {
+    setError(null);
+    const result = await connect();
+    if (result.success) {
+      analytics.track('onboarding_wallet_connected');
+      setStep('profile');
+    } else {
+      setError(result.error ?? 'Connection failed');
+    }
+  };
 
   const handleProfileSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,49 +49,63 @@ export default function Onboarding() {
         </div>
 
         <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-          {/* Progress */}
           <div className="flex">
             {(['connect', 'profile', 'done'] as Step[]).map((s) => (
               <div key={s} className={`flex-1 h-1 ${
                 s === 'connect' ? 'bg-blue-600'
                 : s === 'profile' && (step === 'profile' || step === 'done') ? 'bg-blue-600'
                 : s === 'done' && step === 'done' ? 'bg-green-500'
-                : 'bg-gray-200'
-              }`} />
+                : 'bg-gray-200'}`} />
             ))}
           </div>
 
           <div className="p-6 md:p-8">
-
             {step === 'connect' && (
               <div>
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold">1</div>
+                <div className="flex items-center gap-3 mb-5">
+                  <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                    <Wallet size={20} className="text-blue-600" />
+                  </div>
                   <div>
                     <h2 className="text-xl font-bold text-gray-900">Connect Your Wallet</h2>
                     <p className="text-sm text-gray-500">Step 1 of 2</p>
                   </div>
                 </div>
 
-                <p className="text-gray-600 mb-5 text-sm">
-                  Click <strong>Connect Wallet</strong> below. A wallet selector will appear — pick <strong>Freighter</strong> and approve.
-                </p>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-5 text-sm text-blue-800">
+                  <p className="font-semibold mb-1">Before clicking Connect:</p>
+                  <ol className="space-y-1 list-decimal list-inside">
+                    <li>Open <strong>Freighter</strong> from your browser toolbar</li>
+                    <li>Unlock it with your password</li>
+                    <li>Go to Settings → Network → select <strong>Testnet</strong></li>
+                  </ol>
+                </div>
 
-                {kitError && (
-                  <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 flex gap-2">
-                    <AlertCircle size={16} className="text-red-600 flex-shrink-0 mt-0.5" />
-                    <p className="text-red-700 text-sm">{kitError}</p>
+                {error && (
+                  <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3">
+                    <AlertCircle size={18} className="text-red-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-red-800 text-sm">{error}</p>
+                      {error.toLowerCase().includes('install') && (
+                        <a href="https://freighter.app" target="_blank" rel="noopener noreferrer"
+                          className="text-blue-600 text-xs flex items-center gap-1 mt-1 hover:underline">
+                          Install Freighter free <ExternalLink size={11} />
+                        </a>
+                      )}
+                    </div>
                   </div>
                 )}
 
-                {/* Kit renders its button here */}
-                <div ref={buttonRef} className="flex justify-center min-h-[48px]" />
+                <button onClick={handleConnect} disabled={isConnecting}
+                  className="w-full py-3 bg-[#f59e0b] text-white rounded-lg font-semibold hover:bg-amber-500 transition disabled:opacity-60 flex items-center justify-center gap-2">
+                  {isConnecting
+                    ? <><Loader size={18} className="animate-spin" /> Connecting...</>
+                    : <><Wallet size={18} /> Connect with Freighter</>}
+                </button>
 
                 <p className="text-center text-xs text-gray-400 mt-4">
-                  Supports Freighter · xBull · Albedo · Lobstr{' '}
-                  <span className="mx-1">·</span>
                   <a href="https://freighter.app" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
-                    Install Freighter
+                    Don't have Freighter? Install free
                   </a>
                 </p>
               </div>
@@ -115,23 +122,18 @@ export default function Onboarding() {
                     <p className="text-sm text-gray-500">Step 2 of 2</p>
                   </div>
                 </div>
-
                 {address && (
                   <div className="mb-4 bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2">
                     <CheckCircle size={16} className="text-green-600 flex-shrink-0" />
-                    <p className="text-green-800 text-sm font-mono">
-                      {address.substring(0, 10)}...{address.substring(address.length - 6)}
-                    </p>
+                    <p className="text-green-800 text-sm font-mono">{address.substring(0, 10)}...{address.substring(address.length - 6)}</p>
                   </div>
                 )}
-
                 {profileError && (
                   <div className="mb-4 bg-red-50 border border-red-200 rounded-lg p-3 flex gap-2">
                     <AlertCircle size={16} className="text-red-600 flex-shrink-0 mt-0.5" />
                     <p className="text-red-800 text-sm">{profileError}</p>
                   </div>
                 )}
-
                 <form onSubmit={handleProfileSubmit} className="space-y-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1">Display Name <span className="text-red-500">*</span></label>
@@ -144,14 +146,10 @@ export default function Onboarding() {
                     <select value={form.country} onChange={(e) => setForm({ ...form, country: e.target.value })}
                       className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white">
                       <option value="">Select country...</option>
-                      <option value="NG">Nigeria</option>
-                      <option value="GH">Ghana</option>
-                      <option value="KE">Kenya</option>
-                      <option value="ZA">South Africa</option>
-                      <option value="US">United States</option>
-                      <option value="GB">United Kingdom</option>
-                      <option value="CA">Canada</option>
-                      <option value="OTHER">Other</option>
+                      <option value="NG">Nigeria</option><option value="GH">Ghana</option>
+                      <option value="KE">Kenya</option><option value="ZA">South Africa</option>
+                      <option value="US">United States</option><option value="GB">United Kingdom</option>
+                      <option value="CA">Canada</option><option value="OTHER">Other</option>
                     </select>
                   </div>
                   <div>

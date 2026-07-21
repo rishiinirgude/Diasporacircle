@@ -10,7 +10,7 @@
     "lint": "eslint src --ext ts,tsx"
   },
   "dependencies": {
-    "@jsr/creit-tech__stellar-wallets-kit": "^2.0.0",
+    "@stellar/freighter-api": "^1.7.1",
     "@stellar/stellar-sdk": "^12.0.0",
     "date-fns": "^3.0.0",
     "lucide-react": "^0.400.0",
