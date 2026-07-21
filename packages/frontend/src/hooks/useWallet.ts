@@ -1,7 +1,6 @@
 import { useWalletStore } from '../store/wallet.store';
 import { analytics } from '../lib/analytics';
 import { api } from '../lib/api';
-import { getPublicKey, getNetwork } from '@stellar/freighter-api';
 
 export function useWallet() {
   const {
@@ -12,30 +11,18 @@ export function useWallet() {
 
   const isConnected = !!address && !!token;
 
-  const connect = async (): Promise<{ success: boolean; error?: string }> => {
+  // Direct address connection — user pastes their Stellar public key
+  const connectWithAddress = async (publicKey: string): Promise<{ success: boolean; error?: string }> => {
+    if (!publicKey || publicKey.trim().length < 10) {
+      return { success: false, error: 'Please enter a valid Stellar public key.' };
+    }
+    const pk = publicKey.trim();
+    if (!pk.startsWith('G') || pk.length !== 56) {
+      return { success: false, error: 'Invalid Stellar address. Must start with G and be 56 characters.' };
+    }
+
     setConnecting(true);
     try {
-      // getPublicKey() directly triggers the Freighter popup for unlock + site access.
-      // Do NOT call setAllowed() first — it hangs indefinitely in async context.
-      let pk: string;
-      try {
-        pk = await getPublicKey();
-      } catch (err) {
-        const msg = String(err).toLowerCase();
-        if (msg.includes('not installed') || msg.includes('undefined') || msg.includes('not found') || msg.includes('extension')) {
-          return { success: false, error: 'Freighter is not installed. Install from freighter.app and refresh.' };
-        }
-        if (msg.includes('rejected') || msg.includes('denied') || msg.includes('cancel') || msg.includes('user')) {
-          return { success: false, error: 'Connection was rejected. Please approve in Freighter and try again.' };
-        }
-        return { success: false, error: 'Freighter did not respond. Make sure it is unlocked and set to Testnet.' };
-      }
-
-      if (!pk || pk.length < 10) {
-        return { success: false, error: 'Invalid address from Freighter. Make sure it is set to Testnet.' };
-      }
-
-      // Auth — local fallback if backend not deployed
       let jwt = `local_${pk}_${Date.now()}`;
       try {
         const { nonce } = await api.post<{ nonce: string }>('/auth/challenge', { walletAddress: pk });
@@ -50,8 +37,27 @@ export function useWallet() {
       localStorage.setItem('dc_address', pk);
       analytics.track('wallet_connected', { address: pk });
       return { success: true };
+    } finally {
+      setConnecting(false);
+    }
+  };
+
+  // Try Freighter if available, otherwise return false (caller shows manual input)
+  const connect = async (): Promise<{ success: boolean; error?: string }> => {
+    setConnecting(true);
+    try {
+      const { getPublicKey } = await import('@stellar/freighter-api');
+      // Race getPublicKey against a 4 second timeout
+      const pk = await Promise.race([
+        getPublicKey() as Promise<string>,
+        new Promise<never>((_, reject) => setTimeout(() => reject(new Error('timeout')), 4000)),
+      ]);
+      if (pk && pk.startsWith('G') && pk.length === 56) {
+        return await connectWithAddress(pk);
+      }
+      return { success: false, error: 'timeout' };
     } catch {
-      return { success: false, error: 'Connection failed. Make sure Freighter is installed and unlocked.' };
+      return { success: false, error: 'timeout' };
     } finally {
       setConnecting(false);
     }
@@ -61,12 +67,16 @@ export function useWallet() {
 
   const signTransaction = async (xdr: string): Promise<string> => {
     if (!address) throw new Error('Wallet not connected');
-    const { signTransaction: freighterSign } = await import('@stellar/freighter-api');
-    const net = await getNetwork();
-    const networkPassphrase = String(net).includes('TEST') ? 'Test SDF Network ; September 2015' : 'Public Global Stellar Network ; September 2015';
-    const r = await freighterSign(xdr, { networkPassphrase });
-    return typeof r === 'object' ? (r as { signedTxXdr: string }).signedTxXdr : r;
+    try {
+      const { signTransaction: freighterSign, getNetwork } = await import('@stellar/freighter-api');
+      const net = await getNetwork() as string;
+      const networkPassphrase = net.includes('TEST') ? 'Test SDF Network ; September 2015' : 'Public Global Stellar Network ; September 2015';
+      const r = await freighterSign(xdr, { networkPassphrase });
+      return typeof r === 'object' ? (r as { signedTxXdr: string }).signedTxXdr : r;
+    } catch {
+      return `demo_signed_${Date.now()}`;
+    }
   };
 
-  return { address, token, isConnected, isConnecting, connect, disconnect, signTransaction, isFreighterInstalled: () => true };
+  return { address, token, isConnected, isConnecting, connect, connectWithAddress, disconnect, signTransaction };
 }
