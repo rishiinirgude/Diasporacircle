@@ -117,7 +117,7 @@ export default function CreateCircle() {
         localStorage.setItem('dc_circles', JSON.stringify(existing));
       }
 
-      navigate(`/circles/${circleId}`);
+      navigate(`/dashboard?created=${circleId}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create circle';
       setError(message);

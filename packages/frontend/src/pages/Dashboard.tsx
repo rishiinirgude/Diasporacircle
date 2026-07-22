@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { Circle } from '../types';
 import { api } from '../lib/api';
 import { useWalletStore } from '../store/wallet.store';
 import { analytics } from '../lib/analytics';
-import { Plus, AlertCircle, Loader, User, MessageSquare } from 'lucide-react';
+import { Plus, AlertCircle, Loader, User, MessageSquare, CheckCircle } from 'lucide-react';
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const justCreated = searchParams.get('created');
   const { address } = useWalletStore();
   const [circles, setCircles] = useState<Circle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -86,6 +88,17 @@ export default function Dashboard() {
 
       {/* Content */}
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
+      {/* Success Banner */}
+        {justCreated && (
+          <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex gap-3">
+            <CheckCircle size={20} className="text-green-600 flex-shrink-0" />
+            <div>
+              <p className="font-semibold text-green-900">Circle created successfully!</p>
+              <p className="text-green-700 text-sm">Your savings circle is ready. Share the invite code with members.</p>
+            </div>
+          </div>
+        )}
+
         {/* Error State */}
         {error && (
           <div className="mb-6 bg-red-50 border border-red-200 rounded-lg p-4 flex gap-3">
