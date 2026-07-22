@@ -84,16 +84,19 @@ export default function CreateCircle() {
 
       // Try backend first, fall back to local demo mode
       let circleId: string;
+      let inviteCode: string;
       try {
-        const data = await api.post<{ id: string }>('/circles', {
+        const data = await api.post<{ id: string; inviteCode: string }>('/circles', {
           ...formData,
           memberWallets,
           payoutOrder: memberWallets,
         });
         circleId = data.id;
+        inviteCode = data.inviteCode;
       } catch {
         // Backend not deployed — create circle locally in localStorage
         circleId = `local_${Date.now()}`;
+        inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
         const circle = {
           id: circleId,
           name: formData.name,
@@ -104,7 +107,7 @@ export default function CreateCircle() {
           totalMembers: memberWallets.length,
           currentCycle: 0,
           status: 'PENDING',
-          inviteCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
+          inviteCode,
           members: memberWallets.map((w, i) => ({
             id: `m_${i}`, walletAddress: w, payoutPosition: i,
             securityDepositPaid: false, joinedAt: new Date().toISOString(),
@@ -117,7 +120,7 @@ export default function CreateCircle() {
         localStorage.setItem('dc_circles', JSON.stringify(existing));
       }
 
-      navigate(`/dashboard?created=${circleId}`);
+      navigate(`/dashboard?created=${circleId}&code=${inviteCode}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create circle';
       setError(message);

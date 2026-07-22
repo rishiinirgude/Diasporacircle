@@ -4,12 +4,21 @@ import { Circle } from '../types';
 import { api } from '../lib/api';
 import { useWalletStore } from '../store/wallet.store';
 import { analytics } from '../lib/analytics';
-import { Plus, AlertCircle, Loader, User, MessageSquare, CheckCircle } from 'lucide-react';
+import { Plus, AlertCircle, Loader, User, MessageSquare, CheckCircle, Copy } from 'lucide-react';
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const justCreated = searchParams.get('created');
+  const inviteCode = searchParams.get('code');
+  const [codeCopied, setCodeCopied] = useState(false);
+
+  const copyInviteLink = () => {
+    const link = `${window.location.origin}/join?code=${inviteCode}`;
+    navigator.clipboard.writeText(link);
+    setCodeCopied(true);
+    setTimeout(() => setCodeCopied(false), 2000);
+  };
   const { address } = useWalletStore();
   const [circles, setCircles] = useState<Circle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -90,12 +99,28 @@ export default function Dashboard() {
       <div className="max-w-6xl mx-auto px-4 md:px-6 py-6 md:py-8">
       {/* Success Banner */}
         {justCreated && (
-          <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4 flex gap-3">
-            <CheckCircle size={20} className="text-green-600 flex-shrink-0" />
-            <div>
-              <p className="font-semibold text-green-900">Circle created successfully!</p>
-              <p className="text-green-700 text-sm">Your savings circle is ready. Share the invite code with members.</p>
+          <div className="mb-6 bg-green-50 border border-green-200 rounded-lg p-4">
+            <div className="flex gap-3 mb-3">
+              <CheckCircle size={20} className="text-green-600 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-green-900">Circle created successfully!</p>
+                <p className="text-green-700 text-sm">Share the invite link with members so they can join.</p>
+              </div>
             </div>
+            {inviteCode && (
+              <div className="flex items-center gap-2 mt-2">
+                <code className="flex-1 bg-white border border-green-200 rounded px-3 py-2 text-sm font-mono text-green-800">
+                  {`${window.location.origin}/join?code=${inviteCode}`}
+                </code>
+                <button
+                  onClick={copyInviteLink}
+                  className="flex items-center gap-1 px-3 py-2 bg-green-600 text-white rounded text-sm font-semibold hover:bg-green-700 transition"
+                >
+                  {codeCopied ? <CheckCircle size={14} /> : <Copy size={14} />}
+                  {codeCopied ? 'Copied!' : 'Copy'}
+                </button>
+              </div>
+            )}
           </div>
         )}
 
