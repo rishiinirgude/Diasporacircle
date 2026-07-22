@@ -54,7 +54,16 @@ export default function CircleDetail() {
     try {
       setLoading(true);
       setError(null);
-      const data = await api.get<CircleDetailData>(`/circles/${id}`);
+      let data: CircleDetailData;
+      try {
+        data = await api.get<CircleDetailData>(`/circles/${id}`);
+      } catch {
+        // Backend not deployed — load from localStorage
+        const local = JSON.parse(localStorage.getItem('dc_circles') || '[]') as CircleDetailData[];
+        const found = local.find((c) => c.id === id);
+        if (!found) throw new Error('Circle not found');
+        data = found;
+      }
       setCircle(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load circle');

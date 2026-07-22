@@ -24,12 +24,20 @@ export default function Dashboard() {
       try {
         setLoading(true);
         setError(null);
-        const data = await api.get<Circle[]>('/circles');
+        let data: Circle[];
+        try {
+          data = await api.get<Circle[]>('/circles');
+        } catch {
+          // Backend not deployed — load from localStorage
+          const local = JSON.parse(localStorage.getItem('dc_circles') || '[]') as Circle[];
+          data = local.filter(
+            (c) => c.organizerAddress === address ||
+            (c.members || []).some((m: { walletAddress: string }) => m.walletAddress === address)
+          );
+        }
         setCircles(data);
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to load circles';
-        setError(message);
-        console.error('Failed to load circles:', err);
+        setError('Failed to load circles');
       } finally {
         setLoading(false);
       }
