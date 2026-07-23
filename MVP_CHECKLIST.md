@@ -167,16 +167,20 @@
 - [x] LICENSE file (MIT recommended)
 
 ### Live Demo
-- [x] Frontend deployment checklist (Vercel/Netlify)
-- [x] Backend deployment checklist (Railway/Render/self-hosted)
+- [x] Frontend deployed: https://frontend-coral-nine-24.vercel.app
+- [x] Backend deployed: https://backend-nine-eta-58.vercel.app
+- [x] Backend health check: https://backend-nine-eta-58.vercel.app/health
 - [x] Demo script (DEMO_SCRIPT.md)
 - [ ] Video recording (to be completed)
 
 ### Smart Contracts
-- [ ] Deployed to Stellar testnet
-- [ ] Contract IDs recorded
-- [ ] Stellar Expert verification link
-- [ ] Contract documentation (CONTRACTS.md)
+- [x] Deployed to Stellar testnet
+- [x] Circle Contract ID: `CBQ5AFJXUHHPTYZ2CREDNTS4E5NMJJHUKQBKITGY4FURHB4KCBGT3KR7`
+- [x] Reputation Contract ID: `CDRBHNJZVNBKW2VO3FUAH6A6UBWMBTMURNS5LHUOL5GUJNCC2I5M5A7Y`
+- [x] Reputation contract initialized with admin key
+- [x] Stellar Expert verification links:
+  - Circle: https://stellar.expert/explorer/testnet/contract/CBQ5AFJXUHHPTYZ2CREDNTS4E5NMJJHUKQBKITGY4FURHB4KCBGT3KR7
+  - Reputation: https://stellar.expert/explorer/testnet/contract/CDRBHNJZVNBKW2VO3FUAH6A6UBWMBTMURNS5LHUOL5GUJNCC2I5M5A7Y
 
 ### User Onboarding
 - [ ] Landing page explaining app

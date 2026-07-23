@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Symbol, Vec, String};
+use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Symbol, Vec};
 
 #[contracttype]
 #[derive(Clone)]
@@ -37,7 +37,7 @@ pub struct CycleState {
 }
 
 #[contracttype]
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Debug)]
 pub enum DataKey {
     Circle,
     Member(Address),
@@ -241,7 +241,7 @@ impl CircleContract {
         // Advance to next cycle if not at end
         if config.current_cycle + 1 < config.total_members {
             config.current_cycle += 1;
-            let next_recipient = config.payout_order.get(config.current_cycle as usize)
+            let next_recipient = config.payout_order.get(config.current_cycle)
                 .expect("Invalid payout order index");
             let next_deadline = env.ledger().timestamp() + (config.cycle_length_days as u64 * 86400);
 

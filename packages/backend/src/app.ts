@@ -33,7 +33,15 @@ app.use('/api/feedback', analyticsRoutes); // alias for feedback endpoint
 
 // Health check
 app.get('/health', (_req, res) => {
-  res.json({ ok: true, timestamp: new Date().toISOString(), version: '1.0.0' });
+  res.json({
+    ok: true,
+    timestamp: new Date().toISOString(),
+    version: '1.0.0',
+    db: process.env.DATABASE_URL ? 'configured' : 'not configured (demo mode)',
+    network: process.env.STELLAR_NETWORK || 'testnet',
+    circleContract: process.env.CIRCLE_CONTRACT_ID || 'not set',
+    reputationContract: process.env.REPUTATION_CONTRACT_ID || 'not set',
+  });
 });
 
 // 404 handler
