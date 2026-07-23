@@ -15,44 +15,67 @@ export default function Join() {
 
   const handleJoin = () => {
     if (!address) {
-      // Not connected — send to onboarding with return URL
-      navigate(`/onboarding?return=/join?code=${code}`);
+      navigate(`/onboarding?return=/join?code=${encodeURIComponent(code)}`);
       return;
     }
 
     setStatus('joining');
 
-    // Store the join in localStorage so the organizer can see them
     try {
+      // Try to decode circle from base64 URL param
+      let circle: Record<string, unknown> | null = null;
+      try {
+        const decoded = decodeURIComponent(escape(atob(code)));
+        circle = JSON.parse(decoded);
+      } catch {
+        // Not base64 — try localStorage by short code
+      }
+
       const circles = JSON.parse(localStorage.getItem('dc_circles') || '[]');
 
-      // Find circle by invite code
-      const circleIndex = circles.findIndex((c: { inviteCode?: string }) => c.inviteCode === code);
-
-      if (circleIndex === -1) {
-        // Circle not found locally — record the join attempt
-        const joins = JSON.parse(localStorage.getItem('dc_joins') || '[]');
-        joins.push({ code, walletAddress: address, joinedAt: new Date().toISOString() });
-        localStorage.setItem('dc_joins', JSON.stringify(joins));
+      if (circle) {
+        // Circle came from URL — save to this device's localStorage
+        const exists = circles.find((c: { id: string }) => c.id === (circle as { id: string }).id);
+        if (!exists) {
+          // Add this user as a member
+          const circleData = circle as { members?: Array<{ walletAddress: string; id: string; payoutPosition: number; securityDepositPaid: boolean; joinedAt: string }> };
+          const alreadyMember = circleData.members?.some((m) => m.walletAddress === address);
+          if (!alreadyMember) {
+            circleData.members = circleData.members || [];
+            circleData.members.push({
+              id: `m_${Date.now()}`,
+              walletAddress: address!,
+              payoutPosition: circleData.members.length,
+              securityDepositPaid: true, // auto-paid in demo mode
+              joinedAt: new Date().toISOString(),
+            });
+          }
+          circles.push(circleData);
+          localStorage.setItem('dc_circles', JSON.stringify(circles));
+        }
       } else {
-        // Add member to circle
-        const circle = circles[circleIndex];
-        const alreadyMember = circle.members?.some((m: { walletAddress: string }) => m.walletAddress === address);
+        // Short code — find in localStorage
+        const idx = circles.findIndex((c: { inviteCode?: string }) => c.inviteCode === code);
+        if (idx === -1) {
+          setStatus('error');
+          setMessage('Circle not found. Make sure the link is correct.');
+          return;
+        }
+        const alreadyMember = circles[idx].members?.some((m: { walletAddress: string }) => m.walletAddress === address);
         if (!alreadyMember) {
-          circle.members = circle.members || [];
-          circle.members.push({
+          circles[idx].members = circles[idx].members || [];
+          circles[idx].members.push({
             id: `m_${Date.now()}`,
-            walletAddress: address,
-            payoutPosition: circle.members.length,
-            securityDepositPaid: false,
+            walletAddress: address!,
+            payoutPosition: circles[idx].members.length,
+            securityDepositPaid: true, // auto-paid in demo mode
             joinedAt: new Date().toISOString(),
           });
-          circles[circleIndex] = circle;
           localStorage.setItem('dc_circles', JSON.stringify(circles));
         }
       }
 
-      analytics.track('circle_joined', { code, address });
+      analytics.track('circle_joined', { code: code.substring(0, 10), address });
       setStatus('done');
       setMessage('You have joined the circle!');
     } catch {

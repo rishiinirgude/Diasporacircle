@@ -81,36 +81,76 @@ export default function CircleDetail() {
     try {
       analytics.track('contribution_initiated', { circleId: id });
 
-      // Step 1: Get unsigned XDR from backend
-      const { xdr } = await api.post<{ xdr: string }>(`/circles/${id}/contribute/prepare`, {
-        cycleIndex: circle.currentCycle,
-      });
+      // Try backend flow first; fall back to demo mode if backend unavailable or token invalid
+      let success = false;
+      let txHash = '';
 
-      // Step 2: Sign with wallet
-      let signedXdr: string;
       try {
-        signedXdr = await signTransaction(xdr);
+        // Step 1: Get unsigned XDR from backend
+        const { xdr } = await api.post<{ xdr: string }>(`/circles/${id}/contribute/prepare`, {
+          cycleIndex: circle.currentCycle,
+        });
+
+        // Step 2: Sign with wallet
+        let signedXdr: string;
+        try {
+          signedXdr = await signTransaction(xdr);
+        } catch {
+          signedXdr = `demo_xdr_${Date.now()}`;
+        }
+
+        // Step 3: Submit signed transaction
+        const result = await api.post<{ txHash: string; success: boolean }>(
+          `/circles/${id}/contribute/submit`,
+          { signedXdr, cycleIndex: circle.currentCycle }
+        );
+
+        txHash = result.txHash;
+        success = true;
       } catch {
-        // Wallet not available or user rejected — use demo mode
-        signedXdr = `demo_xdr_${Date.now()}`;
+        // Backend not available or invalid token — demo mode
+        // Record contribution in localStorage
+        const circles = JSON.parse(localStorage.getItem('dc_circles') || '[]');
+        const idx = circles.findIndex((c: { id: string }) => c.id === id);
+        if (idx !== -1) {
+          const demoTxHash = `demo_tx_${Date.now()}_${address?.substring(0, 8)}`;
+          // Mark this member as having contributed this cycle
+          if (!circles[idx].contributions) circles[idx].contributions = [];
+          const alreadyContributed = circles[idx].contributions.some(
+            (c: { memberAddress: string; cycleIndex: number }) =>
+              c.memberAddress === address && c.cycleIndex === circle.currentCycle
+          );
+          if (alreadyContributed) {
+            throw new Error('You have already contributed this cycle');
+          }
+          circles[idx].contributions.push({
+            id: `contrib_${Date.now()}`,
+            memberAddress: address,
+            cycleIndex: circle.currentCycle,
+            amount: circle.contributionAmount,
+            asset: circle.escrowAsset,
+            txHash: demoTxHash,
+            paidAt: new Date().toISOString(),
+            isOnTime: true,
+          });
+          localStorage.setItem('dc_circles', JSON.stringify(circles));
+          txHash = demoTxHash;
+          success = true;
+        } else {
+          throw new Error('Circle not found — are you using the correct browser/account?');
+        }
       }
 
-      // Step 3: Submit signed transaction
-      const result = await api.post<{ txHash: string; success: boolean }>(
-        `/circles/${id}/contribute/submit`,
-        { signedXdr, cycleIndex: circle.currentCycle }
-      );
-
-      setContributeSuccess(result.txHash);
-      analytics.track('contribution_submitted', {
-        circleId: id,
-        txHash: result.txHash,
-        amount: circle.contributionAmount,
-        asset: circle.escrowAsset,
-      });
-
-      // Refresh circle data
-      await fetchCircle();
+      if (success) {
+        setContributeSuccess(txHash);
+        analytics.track('contribution_submitted', {
+          circleId: id,
+          txHash,
+          amount: circle.contributionAmount,
+          asset: circle.escrowAsset,
+        });
+        await fetchCircle();
+      }
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Contribution failed';
       setContributeError(msg);
@@ -123,8 +163,31 @@ export default function CircleDetail() {
   const handleStartCircle = async () => {
     if (!circle || !id) return;
     setStarting(true);
+    setError(null);
     try {
-      await api.post(`/circles/${id}/start`, {});
+      // Try backend first
+      let backendSucceeded = false;
+      try {
+        await api.post(`/circles/${id}/start`, {});
+        backendSucceeded = true;
+      } catch (backendErr) {
+        console.warn('Backend start failed, falling back to local mode:', backendErr);
+      }
+
+      if (!backendSucceeded) {
+        // Backend not deployed — update localStorage directly
+        const circles = JSON.parse(localStorage.getItem('dc_circles') || '[]');
+        const idx = circles.findIndex((c: { id: string }) => c.id === id);
+        if (idx !== -1) {
+          circles[idx].status = 'ACTIVE';
+          circles[idx].startedAt = new Date().toISOString();
+          circles[idx].currentCycle = 0;
+          localStorage.setItem('dc_circles', JSON.stringify(circles));
+        } else {
+          throw new Error('Circle not found in local storage');
+        }
+      }
+
       analytics.track('circle_started', { circleId: id, memberCount: circle.totalMembers });
       await fetchCircle();
     } catch (err) {
@@ -185,7 +248,9 @@ export default function CircleDetail() {
 
   const isOrganizer = circle.organizerAddress === address;
   const isMember = circle.members?.some((m) => m.walletAddress === address);
-  const canContribute = circle.status === 'ACTIVE' && isMember;
+  const hasContributedThisCycle = (circle as CircleDetailData & { contributions?: Array<{ memberAddress: string; cycleIndex: number }> })
+    .contributions?.some((c) => c.memberAddress === address && c.cycleIndex === circle.currentCycle) ?? false;
+  const canContribute = circle.status === 'ACTIVE' && isMember && !hasContributedThisCycle;
   const canStart =
     circle.status === 'PENDING' &&
     isOrganizer &&
@@ -371,6 +436,18 @@ export default function CircleDetail() {
 
         {/* Actions */}
         <div className="flex flex-col gap-3">
+          {/* Demo mode notice */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-3 text-sm text-blue-800">
+            <span className="font-semibold">Demo mode</span> — contributions are recorded locally. No real XLM is transferred.
+          </div>
+
+          {circle.status === 'ACTIVE' && isMember && hasContributedThisCycle && (
+            <div className="w-full py-3 bg-green-50 border border-green-200 text-green-800 rounded-xl font-semibold flex items-center justify-center gap-2">
+              <CheckCircle size={18} />
+              Contributed this cycle ✓
+            </div>
+          )}
+
           {canContribute && (
             <button
               onClick={handleContribute}
