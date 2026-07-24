@@ -20,7 +20,7 @@ DiasporaCircle digitizes traditional rotating savings groups by leveraging **Sor
 
 ## 📊 Live Demo
 
-**[🚀 Live Demo](https://frontend-coral-nine-24.vercel.app)** (Stellar Testnet)
+**[🚀 Live Demo → https://frontend-coral-nine-24.vercel.app](https://frontend-coral-nine-24.vercel.app)** (Stellar Testnet)
 
 > Connect with **Freighter wallet** set to **Testnet** to try the full flow.
 
