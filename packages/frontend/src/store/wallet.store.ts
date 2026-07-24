@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
+function isRealJwt(token: string | null): boolean {
+  if (!token) return false;
+  return token.split('.').length === 3;
+}
+
 interface WalletState {
   address: string | null;
   isConnected: boolean;
@@ -30,6 +35,16 @@ export const useWalletStore = create<WalletState>()(
     }),
     {
       name: 'dc_wallet',
+      // On rehydration, wipe stale demo tokens so user has to reconnect properly
+      onRehydrateStorage: () => (state) => {
+        if (state && state.token && !isRealJwt(state.token)) {
+          state.token = null;
+          state.address = null;
+          state.isConnected = false;
+          localStorage.removeItem('dc_token');
+          localStorage.removeItem('dc_address');
+        }
+      },
     }
   )
 );

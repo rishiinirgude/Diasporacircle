@@ -38,7 +38,12 @@ export default function Dashboard() {
         const data = await api.get<Circle[]>('/circles');
         setCircles(data);
       } catch (err) {
-        setError('Failed to load circles. Make sure you are connected.');
+        const msg = err instanceof Error ? err.message : 'Failed to load circles';
+        if (msg.includes('Session expired') || msg.includes('reconnect')) {
+          navigate('/onboarding');
+          return;
+        }
+        setError(msg);
       } finally {
         setLoading(false);
       }
