@@ -1,15 +1,5 @@
-import {
-  Keypair,
-  SorobanRpc,
-  xdr,
-  nativeToScVal,
-  scValToNative,
-  Address as StellarAddress,
-  StrKey,
-  TransactionBuilder,
-  BASE_FEE,
-} from '@stellar/stellar-sdk';
-import { horizonServer, sorobanRpc, networkPassphrase } from '../config/stellar';
+import { StrKey } from '@stellar/stellar-sdk';
+import { horizonServer, sorobanRpc } from '../config/stellar';
 
 export class StellarService {
   static async getAccount(publicKey: string) {
@@ -41,7 +31,7 @@ export class StellarService {
     for (let i = 0; i < maxAttempts; i++) {
       try {
         const result = await this.getTransactionStatus(hash);
-        if (result.status !== SorobanRpc.TransactionStatus.PENDING) {
+        if (result.status !== 'NOT_FOUND') {
           return result;
         }
       } catch (err) {

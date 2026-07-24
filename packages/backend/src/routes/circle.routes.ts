@@ -2,7 +2,7 @@ import { Router, Response } from 'express';
 import { z } from 'zod';
 import { walletAuthMiddleware, AuthRequest } from '../middleware/auth.middleware';
 import { CircleService } from '../services/circle.service';
-import { CreateCircleInput } from '../types/shared';
+import { prisma } from '../config/db';
 
 const router = Router();
 
@@ -15,10 +15,6 @@ const CreateCircleSchema = z.object({
   payoutOrder: z.array(z.string()),
 });
 
-const JoinCircleSchema = z.object({
-  walletAddress: z.string(),
-});
-
 // Get all circles for authenticated user
 router.get('/', walletAuthMiddleware, async (req: AuthRequest, res: Response) => {
   try {
@@ -27,6 +23,32 @@ router.get('/', walletAuthMiddleware, async (req: AuthRequest, res: Response) =>
   } catch (err) {
     console.error('Get circles error:', err);
     res.status(500).json({ error: 'Failed to fetch circles' });
+  }
+});
+
+// Preview circle by invite code (no auth required) — must come BEFORE /:id
+router.get('/join/:inviteCode', async (req: AuthRequest, res: Response) => {
+  try {
+    // Find circle by invite code
+    const circle = await prisma.circle.findUnique({
+      where: { inviteCode: req.params.inviteCode },
+      include: { members: true },
+    });
+    if (!circle) {
+      return res.status(404).json({ error: 'Circle not found' });
+    }
+    res.json({
+      id: circle.id,
+      name: circle.name,
+      contributionAmount: circle.contributionAmount,
+      escrowAsset: circle.escrowAsset,
+      cycleLengthDays: circle.cycleLengthDays,
+      membersJoined: circle.members?.length || 0,
+      totalMembers: circle.totalMembers,
+    });
+  } catch (err) {
+    console.error('Preview circle error:', err);
+    res.status(404).json({ error: 'Circle not found' });
   }
 });
 
@@ -53,25 +75,6 @@ router.post('/', walletAuthMiddleware, async (req: AuthRequest, res: Response) =
   } catch (err) {
     console.error('Create circle error:', err);
     res.status(400).json({ error: 'Failed to create circle' });
-  }
-});
-
-// Preview circle by invite code (no auth required)
-router.get('/join/:inviteCode', async (req: AuthRequest, res: Response) => {
-  try {
-    const circle = await CircleService.getCircleById(req.params.inviteCode);
-    res.json({
-      id: circle.id,
-      name: circle.name,
-      contributionAmount: circle.contributionAmount,
-      escrowAsset: circle.escrowAsset,
-      cycleLengthDays: circle.cycleLengthDays,
-      membersJoined: circle.members?.length || 0,
-      totalMembers: circle.totalMembers,
-    });
-  } catch (err) {
-    console.error('Preview circle error:', err);
-    res.status(404).json({ error: 'Circle not found' });
   }
 });
 

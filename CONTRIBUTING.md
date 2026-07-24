@@ -1,4 +1,4 @@
-# Contributing Guidelines
+cc# Contributing Guidelines
 
 Thank you for your interest in contributing to DiasporaCircle! We welcome contributions of all types.
 

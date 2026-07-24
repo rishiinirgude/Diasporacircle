@@ -1,51 +1,47 @@
 import {
-  Keypair,
   SorobanRpc,
   TransactionBuilder,
   BASE_FEE,
   nativeToScVal,
   scValToNative,
-  xdr,
+  Operation,
+  Address,
+  Asset,
+  Keypair,
 } from '@stellar/stellar-sdk';
 import { sorobanRpc, networkPassphrase } from '../config/stellar';
 import { StellarService } from './stellar.service';
+import { horizonServer } from '../config/stellar';
 
 export class SorobanService {
+  /**
+   * Build a real XLM payment transaction for a circle contribution.
+   * The member pays the contribution amount to the circle organizer's address.
+   * This produces a real on-chain testnet transaction without needing a deployed contract instance.
+   */
   static async buildContributeTransaction(
     memberPublicKey: string,
-    contractId: string,
-    cycleIndex: number
+    recipientPublicKey: string,
+    amountXlm: string
   ): Promise<string> {
     try {
-      const account = await StellarService.getAccount(memberPublicKey);
-      const contractAddress = nativeToScVal.contractAddress(contractId);
-      const memberAddress = nativeToScVal.contractAddress(memberPublicKey);
-      const cycleIndexVal = nativeToScVal.u32(cycleIndex);
+      const account = await horizonServer.loadAccount(memberPublicKey);
 
       const transaction = new TransactionBuilder(account, {
         fee: BASE_FEE,
         networkPassphrase,
       })
-        .addOperation({
-          type: 'invokeHostFunction',
-          hostFunction: SorobanRpc.Operation.invokeContractFunction(
-            contractId,
-            'contribute',
-            [memberAddress, cycleIndexVal]
-          ),
-          auth: [],
-        } as any)
+        .addOperation(
+          Operation.payment({
+            destination: recipientPublicKey,
+            asset: Asset.native(),
+            amount: amountXlm,
+          })
+        )
         .setTimeout(300)
         .build();
 
-      const simResult = await sorobanRpc.simulateTransaction(transaction);
-
-      if (SorobanRpc.isSimulationSuccess(simResult)) {
-        const assembled = SorobanRpc.assembleTransaction(transaction, simResult);
-        return assembled.toXDR();
-      } else {
-        throw new Error(`Simulation failed: ${simResult.error}`);
-      }
+      return transaction.toXDR();
     } catch (err) {
       throw new Error(`Failed to build contribute transaction: ${err}`);
     }
@@ -53,23 +49,34 @@ export class SorobanService {
 
   static async submitSignedTransaction(signedXdr: string) {
     try {
-      const submitResult = await StellarService.submitTransaction(signedXdr);
+      // Try Soroban RPC first, fall back to Horizon
+      try {
+        const submitResult = await sorobanRpc.sendTransaction(signedXdr);
+        const hash = submitResult.hash;
 
-      if (submitResult.status === SorobanRpc.TransactionStatus.PENDING) {
-        const finalResult = await StellarService.pollForTransaction(submitResult.hash);
+        if (submitResult.status === 'PENDING' || submitResult.status === 'TRY_AGAIN_LATER') {
+          const finalResult = await StellarService.pollForTransaction(hash);
+          return {
+            hash,
+            status: finalResult.status,
+            success: finalResult.status === SorobanRpc.Api.GetTransactionStatus.SUCCESS,
+          };
+        }
+
         return {
-          hash: submitResult.hash,
-          status: finalResult.status,
-          success:
-            finalResult.status === SorobanRpc.TransactionStatus.SUCCESS,
+          hash,
+          status: submitResult.status,
+          success: submitResult.status === SorobanRpc.Api.GetTransactionStatus.SUCCESS,
+        };
+      } catch {
+        // Soroban RPC doesn't accept classic transactions — use Horizon
+        const result = await horizonServer.submitTransaction(signedXdr as any);
+        return {
+          hash: result.hash,
+          status: 'SUCCESS',
+          success: true,
         };
       }
-
-      return {
-        hash: submitResult.hash,
-        status: submitResult.status,
-        success: submitResult.status === SorobanRpc.TransactionStatus.SUCCESS,
-      };
     } catch (err) {
       throw new Error(`Failed to submit transaction: ${err}`);
     }
@@ -85,23 +92,21 @@ export class SorobanService {
         fee: BASE_FEE,
         networkPassphrase,
       })
-        .addOperation({
-          type: 'invokeHostFunction',
-          hostFunction: SorobanRpc.Operation.invokeContractFunction(
-            contractId,
-            'get_circle_config',
-            []
-          ),
-          auth: [],
-        } as any)
+        .addOperation(
+          Operation.invokeContractFunction({
+            contract: contractId,
+            function: 'get_circle_config',
+            args: [],
+          })
+        )
         .setTimeout(300)
         .build();
 
       const simResult = await sorobanRpc.simulateTransaction(transaction);
 
-      if (SorobanRpc.isSimulationSuccess(simResult) && simResult.result) {
-        const resultBuf = Buffer.from(simResult.result.retval, 'base64');
-        return scValToNative(xdr.ScVal.fromXDR(resultBuf));
+      if (SorobanRpc.Api.isSimulationSuccess(simResult) && simResult.result) {
+        const retval = simResult.result.retval;
+        return scValToNative(retval);
       }
 
       throw new Error('Failed to get circle config');

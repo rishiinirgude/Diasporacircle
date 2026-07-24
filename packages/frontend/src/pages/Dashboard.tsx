@@ -35,20 +35,10 @@ export default function Dashboard() {
       try {
         setLoading(true);
         setError(null);
-        let data: Circle[];
-        try {
-          data = await api.get<Circle[]>('/circles');
-        } catch {
-          // Backend not deployed — load from localStorage
-          const local = JSON.parse(localStorage.getItem('dc_circles') || '[]') as Circle[];
-          data = local.filter(
-            (c) => c.organizerAddress === address ||
-            (c.members || []).some((m: { walletAddress: string }) => m.walletAddress === address)
-          );
-        }
+        const data = await api.get<Circle[]>('/circles');
         setCircles(data);
       } catch (err) {
-        setError('Failed to load circles');
+        setError('Failed to load circles. Make sure you are connected.');
       } finally {
         setLoading(false);
       }

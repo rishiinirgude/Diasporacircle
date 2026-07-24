@@ -45,6 +45,8 @@ model Circle {
 
   members CircleMember[]
   cycles  Cycle[]
+
+  updatedAt DateTime @updatedAt
 }
 
 model CircleMember {

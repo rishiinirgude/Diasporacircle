@@ -10,16 +10,21 @@ export class ContributionService {
     try {
       const circle = await prisma.circle.findUniqueOrThrow({
         where: { id: circleId },
+        include: {
+          members: true,
+          cycles: { where: { status: 'OPEN' }, orderBy: { cycleIndex: 'asc' }, take: 1 },
+        },
       });
 
-      if (!circle.contractId) {
-        throw new Error('Circle has no deployed contract');
-      }
+      // Recipient is the current cycle's recipient, or the organizer as fallback
+      const currentCycleData = circle.cycles[0];
+      const recipientAddress = currentCycleData?.recipientAddress || circle.organizerAddress;
 
+      // Build a real XLM payment transaction
       const xdr = await SorobanService.buildContributeTransaction(
         memberAddress,
-        circle.contractId,
-        circle.currentCycle
+        recipientAddress,
+        circle.contributionAmount.toFixed(7)
       );
 
       return {
@@ -34,10 +39,9 @@ export class ContributionService {
 
   static async submitContribution(
     signedXdr: string,
-    cycleId: string,
+    circleId: string,
     memberAddress: string,
-    amount: number,
-    asset: string
+    cycleIndex: number
   ): Promise<ContributionSubmitResponse> {
     try {
       const result = await SorobanService.submitSignedTransaction(signedXdr);
@@ -46,17 +50,24 @@ export class ContributionService {
         throw new Error('Transaction failed on-chain');
       }
 
-      // Record contribution
-      await prisma.contribution.create({
-        data: {
-          cycleId,
-          memberAddress,
-          amount,
-          asset,
-          txHash: result.hash,
-          isOnTime: true,
-        },
+      // Find the open cycle for this circle
+      const cycle = await prisma.cycle.findFirst({
+        where: { circleId, cycleIndex, status: 'OPEN' },
       });
+
+      if (cycle) {
+        // Record contribution in DB
+        await prisma.contribution.create({
+          data: {
+            cycleId: cycle.id,
+            memberAddress,
+            amount: (await prisma.circle.findUnique({ where: { id: circleId } }))?.contributionAmount || 0,
+            asset: 'native',
+            txHash: result.hash,
+            isOnTime: true,
+          },
+        });
+      }
 
       const explorerUrl = `https://stellar.expert/explorer/testnet/tx/${result.hash}`;
 

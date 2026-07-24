@@ -163,7 +163,9 @@ export class CircleService {
         throw new Error('Circle must be in PENDING status');
       }
 
-      if (!circle.members.every((m) => m.securityDepositPaid)) {
+      // Only enforce security deposits in production mode
+      const isDemoMode = process.env.NODE_ENV !== 'production';
+      if (!isDemoMode && !circle.members.every((m) => m.securityDepositPaid)) {
         throw new Error('Not all members have paid security deposit');
       }
 

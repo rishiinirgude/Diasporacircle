@@ -1,0 +1,1 @@
+C:\Users\Dell\Desktop\cert\diasporacircle\packages\contracts\reputation\target\wasm32v1-none\release\diasporacircle_reputation.wasm: C:\Users\Dell\Desktop\cert\diasporacircle\packages\contracts\reputation\src\lib.rs

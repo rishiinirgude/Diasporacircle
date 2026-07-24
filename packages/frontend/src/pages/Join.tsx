@@ -13,74 +13,22 @@ export default function Join() {
   const [status, setStatus] = useState<'idle' | 'joining' | 'done' | 'error'>('idle');
   const [message, setMessage] = useState('');
 
-  const handleJoin = () => {
+  const handleJoin = async () => {
     if (!address) {
       navigate(`/onboarding?return=/join?code=${encodeURIComponent(code)}`);
       return;
     }
 
     setStatus('joining');
-
     try {
-      // Try to decode circle from base64 URL param
-      let circle: Record<string, unknown> | null = null;
-      try {
-        const decoded = decodeURIComponent(escape(atob(code)));
-        circle = JSON.parse(decoded);
-      } catch {
-        // Not base64 — try localStorage by short code
-      }
-
-      const circles = JSON.parse(localStorage.getItem('dc_circles') || '[]');
-
-      if (circle) {
-        // Circle came from URL — save to this device's localStorage
-        const exists = circles.find((c: { id: string }) => c.id === (circle as { id: string }).id);
-        if (!exists) {
-          // Add this user as a member
-          const circleData = circle as { members?: Array<{ walletAddress: string; id: string; payoutPosition: number; securityDepositPaid: boolean; joinedAt: string }> };
-          const alreadyMember = circleData.members?.some((m) => m.walletAddress === address);
-          if (!alreadyMember) {
-            circleData.members = circleData.members || [];
-            circleData.members.push({
-              id: `m_${Date.now()}`,
-              walletAddress: address!,
-              payoutPosition: circleData.members.length,
-              securityDepositPaid: true, // auto-paid in demo mode
-              joinedAt: new Date().toISOString(),
-            });
-          }
-          circles.push(circleData);
-          localStorage.setItem('dc_circles', JSON.stringify(circles));
-        }
-      } else {
-        // Short code — find in localStorage
-        const idx = circles.findIndex((c: { inviteCode?: string }) => c.inviteCode === code);
-        if (idx === -1) {
-          setStatus('error');
-          setMessage('Circle not found. Make sure the link is correct.');
-          return;
-        }
-        const alreadyMember = circles[idx].members?.some((m: { walletAddress: string }) => m.walletAddress === address);
-        if (!alreadyMember) {
-          circles[idx].members = circles[idx].members || [];
-          circles[idx].members.push({
-            id: `m_${Date.now()}`,
-            walletAddress: address!,
-            payoutPosition: circles[idx].members.length,
-            securityDepositPaid: true, // auto-paid in demo mode
-            joinedAt: new Date().toISOString(),
-          });
-          localStorage.setItem('dc_circles', JSON.stringify(circles));
-        }
-      }
-
-      analytics.track('circle_joined', { code: code.substring(0, 10), address });
+      // Join via backend using the short invite code
+      await api.post(`/circles/join/${code}`, {});
+      analytics.track('circle_joined', { code, address });
       setStatus('done');
       setMessage('You have joined the circle!');
-    } catch {
+    } catch (err) {
       setStatus('error');
-      setMessage('Failed to join. Please try again.');
+      setMessage(err instanceof Error ? err.message : 'Failed to join. Make sure the invite link is correct.');
     }
   };
 

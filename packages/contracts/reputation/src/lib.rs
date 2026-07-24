@@ -1,5 +1,5 @@
 #![no_std]
-use soroban_sdk::{contract, contractimpl, contracttype, Address, Env, Symbol, Set, Map};
+use soroban_sdk::{contract, contractimpl, contracttype, vec, Address, Env, Vec};
 
 #[contracttype]
 #[derive(Clone)]
@@ -13,7 +13,7 @@ pub struct ReputationProfile {
 }
 
 #[contracttype]
-#[derive(Clone, Debug, Copy)]
+#[derive(Clone, Debug)]
 pub enum DataKey {
     Admin,
     Profile(Address),
@@ -31,7 +31,8 @@ impl ReputationContract {
             panic!("Contract already initialized");
         }
         env.storage().persistent().set(&DataKey::Admin, &admin);
-        env.storage().persistent().set(&DataKey::AuthorizedCircles, &Set::new(&env));
+        let empty: Vec<Address> = vec![&env];
+        env.storage().persistent().set(&DataKey::AuthorizedCircles, &empty);
     }
 
     /// Authorize a circle contract to record cycles
@@ -45,10 +46,12 @@ impl ReputationContract {
             panic!("Unauthorized");
         }
 
-        let mut authorized: Set<Address> = env.storage().persistent().get(&DataKey::AuthorizedCircles)
-            .expect("Authorized circles not initialized");
+        let mut authorized: Vec<Address> = env.storage()
+            .persistent()
+            .get(&DataKey::AuthorizedCircles)
+            .unwrap_or_else(|| vec![&env]);
 
-        authorized.insert(circle);
+        authorized.push_back(circle);
         env.storage().persistent().set(&DataKey::AuthorizedCircles, &authorized);
     }
 
@@ -56,10 +59,19 @@ impl ReputationContract {
     pub fn record_cycle(env: Env, circle: Address, member: Address, paid_on_time: bool) {
         circle.require_auth();
 
-        let authorized: Set<Address> = env.storage().persistent().get(&DataKey::AuthorizedCircles)
+        let authorized: Vec<Address> = env.storage()
+            .persistent()
+            .get(&DataKey::AuthorizedCircles)
             .expect("Authorized circles not initialized");
 
-        if !authorized.contains(&circle) {
+        let mut is_authorized = false;
+        for addr in authorized.iter() {
+            if addr == circle {
+                is_authorized = true;
+                break;
+            }
+        }
+        if !is_authorized {
             panic!("Circle not authorized");
         }
 
@@ -80,19 +92,17 @@ impl ReputationContract {
             profile.total_defaulted += 1;
         }
 
-        // Recompute score: (on_time * 1000) / (on_time + late + defaulted)
+        // Recompute score: (on_time * 1000) / total
         let total = profile.total_on_time + profile.total_late + profile.total_defaulted;
         if total > 0 {
             profile.score = ((profile.total_on_time as u64 * 1000) / total as u64) as u32;
-            // Apply consistency multiplier: min(circles_completed / 5, 1.0)
+            // Consistency multiplier: min(circles_completed / 5, 1.0)
             let consistency_factor = if profile.circles_completed < 5 {
                 profile.circles_completed as u64
             } else {
                 5u64
             };
             profile.score = ((profile.score as u64 * consistency_factor) / 5u64) as u32;
-            
-            // Cap at 1000
             if profile.score > 1000 {
                 profile.score = 1000;
             }
@@ -104,7 +114,8 @@ impl ReputationContract {
 
     /// Get reputation profile for a wallet
     pub fn get_profile(env: Env, member: Address) -> ReputationProfile {
-        env.storage().persistent().get::<DataKey, ReputationProfile>(&DataKey::Profile(member))
+        env.storage().persistent()
+            .get::<DataKey, ReputationProfile>(&DataKey::Profile(member.clone()))
             .unwrap_or_else(|| ReputationProfile {
                 wallet: member,
                 circles_completed: 0,
@@ -124,11 +135,8 @@ mod test {
     fn test_initialization() {
         let env = Env::default();
         let contract_id = env.register_contract(None, ReputationContract);
-        
         let admin = Address::generate(&env);
         let client = ReputationContractClient::new(&env, &contract_id);
-        
         client.initialize(&admin);
-        // If we reach here, initialization succeeded
     }
 }

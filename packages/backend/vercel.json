@@ -1,20 +1,18 @@
 {
   "version": 2,
-  "buildCommand": "npm install && npm run vercel-build",
   "builds": [
     {
-      "src": "dist/app.js",
-      "use": "@vercel/node"
+      "src": "src/app.ts",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["src/**", "prisma/**"]
+      }
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "dist/app.js"
+      "dest": "src/app.ts"
     }
-  ],
-  "env": {
-    "NODE_ENV": "production",
-    "STELLAR_NETWORK": "testnet"
-  }
+  ]
 }

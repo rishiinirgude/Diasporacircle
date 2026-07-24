@@ -82,44 +82,14 @@ export default function CreateCircle() {
         .map((w) => w.trim())
         .filter(Boolean);
 
-      // Try backend first, fall back to local demo mode
-      let circleId: string;
-      let inviteCode: string;
-      try {
-        const data = await api.post<{ id: string; inviteCode: string }>('/circles', {
-          ...formData,
-          memberWallets,
-          payoutOrder: memberWallets,
-        });
-        circleId = data.id;
-        inviteCode = data.inviteCode;
-      } catch {
-        // Backend not deployed — create circle locally in localStorage
-        circleId = `local_${Date.now()}`;
-        inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-        const circle = {
-          id: circleId,
-          name: formData.name,
-          organizerAddress: address,
-          contributionAmount: formData.contributionAmount,
-          escrowAsset: formData.escrowAsset,
-          cycleLengthDays: formData.cycleLengthDays,
-          totalMembers: memberWallets.length,
-          currentCycle: 0,
-          status: 'PENDING',
-          inviteCode,
-          members: memberWallets.map((w, i) => ({
-            id: `m_${i}`, walletAddress: w, payoutPosition: i,
-            securityDepositPaid: false, joinedAt: new Date().toISOString(),
-          })),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        const existing = JSON.parse(localStorage.getItem('dc_circles') || '[]');
-        existing.push(circle);
-        localStorage.setItem('dc_circles', JSON.stringify(existing));
-      }
-
+      // Create circle via backend
+      const data = await api.post<{ id: string; inviteCode: string }>('/circles', {
+        ...formData,
+        memberWallets,
+        payoutOrder: memberWallets,
+      });
+      const circleId = data.id;
+      const inviteCode = data.inviteCode;
       navigate(`/dashboard?created=${circleId}&code=${inviteCode}`);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create circle';

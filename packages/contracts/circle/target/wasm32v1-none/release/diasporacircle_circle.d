@@ -1,0 +1,1 @@
+C:\Users\Dell\Desktop\cert\diasporacircle\packages\contracts\circle\target\wasm32v1-none\release\diasporacircle_circle.wasm: C:\Users\Dell\Desktop\cert\diasporacircle\packages\contracts\circle\src\lib.rs
