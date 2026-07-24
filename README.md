@@ -8,6 +8,39 @@
 
 DiasporaCircle digitizes traditional rotating savings groups by leveraging **Soroban smart contracts** on Stellar. Members of a group each contribute a fixed amount every cycle; one member collects the full pot per cycle. A smart contract holds funds in escrow—no organizer can steal.
 
+---
+
+## ❗ Problem Statement
+
+Rotating savings groups (known as *susu* in Ghana, *chama* in Kenya, *tanda* in Mexico, *hui* in China) are a lifeline for millions of diaspora communities worldwide. Members pool money together and take turns receiving the full pot.
+
+**But the current system is broken:**
+
+- 🚫 **Trust problem** — The organizer holds all the money. One dishonest person can disappear with everyone's savings
+- 🚫 **No transparency** — Members have no visibility into who paid and when
+- 🚫 **No enforcement** — Late or missed payments have no consequence
+- 🚫 **Geographic barriers** — Diaspora members across different countries can't easily participate
+- 🚫 **No digital record** — Disputes are settled by memory, not evidence
+
+Every year, communities lose thousands of dollars to bad actors in savings circles they trusted.
+
+---
+
+## ✅ Solution
+
+DiasporaCircle puts the savings circle **on the Stellar blockchain** using Soroban smart contracts:
+
+- 🔐 **Smart contract escrow** — Funds are locked in a contract, not held by any individual. The organizer cannot access the pot
+- 📊 **Full transparency** — Every contribution and disbursement is recorded on-chain and publicly verifiable
+- ⚡ **Automatic disbursement** — When all members contribute, the pot is released to the cycle recipient instantly
+- 🌍 **Global access** — Any Stellar wallet worldwide can join a circle via an invite link
+- 📈 **On-chain reputation** — Members build a payment history score across circles, enabling trust without personal relationships
+- 💱 **Local currency support** — Fund in local currency via Stellar anchors (SEP-24)
+
+**The result:** The same community savings tradition your grandparents used — now trustless, transparent, and global.
+
+---
+
 **Key Features:**
 - ✅ **Smart contract escrow** — Funds held safely on-chain
 - ✅ **No organizer risk** — Automatic disbursement via contract logic
