@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { CheckCircle, AlertCircle, Loader, Users } from 'lucide-react';
 import { useWalletStore } from '../store/wallet.store';
 import { analytics } from '../lib/analytics';
+import { api } from '../lib/api';
 
 export default function Join() {
   const navigate = useNavigate();
