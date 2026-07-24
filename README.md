@@ -22,11 +22,9 @@ DiasporaCircle digitizes traditional rotating savings groups by leveraging **Sor
 
 **[🚀 Live Demo (Primary)](https://frontend-coral-nine-24.vercel.app)** (Stellar Testnet)
 
-**[🚀 Live Demo (Mirror)](https://frontend-phi-vert-10.vercel.app)** (Stellar Testnet)
-
 > Connect with **Freighter wallet** set to **Testnet** to try the full flow.
 
-**[📹 Demo Video](https://youtu.be/diasporacircle-demo)** — Full walkthrough
+**[📹 Demo Video](https://youtu.be/diasporacircle-demo)** — Full walkthrough (recording in progress)
 
 ---
 
@@ -59,6 +57,10 @@ DiasporaCircle digitizes traditional rotating savings groups by leveraging **Sor
 │  (Contract IDs: see .env.example)                           │
 └─────────────────────────────────────────────────────────────┘
 ```
+
+**Circle Contract:** `CBQ5AFJXUHHPTYZ2CREDNTS4E5NMJJHUKQBKITGY4FURHB4KCBGT3KR7`  
+**Reputation Contract:** `CDRBHNJZVNBKW2VO3FUAH6A6UBWMBTMURNS5LHUOL5GUJNCC2I5M5A7Y`  
+**Network:** Stellar Testnet
 
 **Detailed Architecture**: [ARCHITECTURE.md](./ARCHITECTURE.md)
 
@@ -212,7 +214,20 @@ Step 3: Review
 
 ---
 
-## 👥 User Onboarding
+## 👥 Real User Wallet Interactions (Proof)
+
+Minimum 2 real users onboarded on Stellar Testnet. Transactions verified on [Stellar Expert](https://stellar.expert/explorer/testnet).
+
+| # | Name | Wallet Address | Action | Transaction |
+|---|------|---------------|--------|-------------|
+| 1 | Rishi Nirgude | `GDTFEGG6CM4OPTVM4MTKDMY3JFBYQS6AQRMM5DVN36AYAYJXELMZYA5B` | Connected wallet + contributed | [4db83e8e...084fcc](https://stellar.expert/explorer/testnet/tx/4db83e8e4b09e056b80bfc541f0cb61d1a9f2b316abbe759847f299804084fcc) |
+| 2 | Sneha Bhambare | `GDG4K3RXV5RGEIJ4FKK3GU3CPVQLZZVZOCKREXEKSWTP4LQTAKQDSPFM` | Joined circle + contributed | [6c59e9a0...839bde](https://stellar.expert/explorer/testnet/tx/6c59e9a0881e92d5a5c7e87489ceb9eeb46dd6b6d4295668bde04b8f90839bde) |
+
+> All transactions are on **Stellar Testnet**. Verified at https://stellar.expert/explorer/testnet
+
+---
+
+
 
 ### Sign-Up Flow
 
@@ -294,16 +309,17 @@ Events tracked automatically:
 
 | Item | Status | Link/Evidence |
 |------|--------|---------------|
-| Public GitHub repo | ✅ | https://github.com/yogitabhambare3-5778s-projects/diasporacircle |
+| Public GitHub repo | ⏳ | Push to GitHub to complete |
 | README | ✅ | This file |
-| 15+ commits | ✅ | 22 commits — `git log --oneline` |
+| 15+ commits | ✅ | 47+ commits — `git log --oneline` |
 | Live demo | ✅ | https://frontend-coral-nine-24.vercel.app |
-| Mirror demo | ✅ | https://frontend-phi-vert-10.vercel.app |
-| Contract code | ✅ | `packages/contracts/` (Rust/Soroban) |
-| Demo video | ✅ | https://youtu.be/diasporacircle-demo |
-| Feedback summary | ✅ | See User Testing section — 4.2/5 avg, 12 responses |
-| Wallet interactions | ✅ | 12 interactions from 8 unique wallets (see SUBMISSION.md) |
-| Analytics setup | ✅ | `/api/analytics/summary` endpoint + JS error monitoring |
+| Backend API | ✅ | https://backend-nine-eta-58.vercel.app/health |
+| Circle Contract | ✅ | [CBQ5AFJ...](https://stellar.expert/explorer/testnet/contract/CBQ5AFJXUHHPTYZ2CREDNTS4E5NMJJHUKQBKITGY4FURHB4KCBGT3KR7) |
+| Reputation Contract | ✅ | [CDRBHNJ...](https://stellar.expert/explorer/testnet/contract/CDRBHNJZVNBKW2VO3FUAH6A6UBWMBTMURNS5LHUOL5GUJNCC2I5M5A7Y) |
+| Demo video | ⏳ | Recording in progress |
+| Feedback summary | ✅ | See User Testing section |
+| Wallet interactions | ✅ | 2 real users, real on-chain tx (see above) |
+| Analytics setup | ✅ | `/api/analytics/summary` + JS error monitoring |
 | Full submission doc | ✅ | [SUBMISSION.md](./SUBMISSION.md) |
 
 ---
@@ -312,13 +328,12 @@ Events tracked automatically:
 
 | Link | Purpose |
 |------|---------|
-| **GitHub Repo** | https://github.com/yogitabhambare3-5778s-projects/diasporacircle |
-| **Live Demo (Primary)** | https://frontend-coral-nine-24.vercel.app |
-| **Live Demo (Mirror)** | https://frontend-phi-vert-10.vercel.app |
-| **Demo Video** | https://youtu.be/diasporacircle-demo |
-| **Contract Addresses** | See `SUBMISSION.md` |
+| **Live Demo** | https://frontend-coral-nine-24.vercel.app |
+| **Backend API** | https://backend-nine-eta-58.vercel.app |
+| **Backend Health** | https://backend-nine-eta-58.vercel.app/health |
+| **Circle Contract** | https://stellar.expert/explorer/testnet/contract/CBQ5AFJXUHHPTYZ2CREDNTS4E5NMJJHUKQBKITGY4FURHB4KCBGT3KR7 |
+| **Reputation Contract** | https://stellar.expert/explorer/testnet/contract/CDRBHNJZVNBKW2VO3FUAH6A6UBWMBTMURNS5LHUOL5GUJNCC2I5M5A7Y |
 | **Stellar Expert** | https://stellar.expert/explorer/testnet |
-| **Analytics Summary** | `GET /api/analytics/summary` on deployed backend |
 | **Submission Checklist** | [SUBMISSION.md](./SUBMISSION.md) |
 
 ---
