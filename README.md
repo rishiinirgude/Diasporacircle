@@ -79,7 +79,7 @@ DiasporaCircle digitizes traditional rotating savings groups by leveraging **Sor
 ### Installation
 
 ```bash
-git clone https://github.com/your-org/diasporacircle
+git clone https://github.com/rishiinirgude/Diasporacircle
 cd diasporacircle
 
 # Install dependencies
@@ -311,16 +311,16 @@ Events tracked automatically:
 
 | Item | Status | Link/Evidence |
 |------|--------|---------------|
-| Public GitHub repo | ⏳ | Push to GitHub to complete |
+| Public GitHub repo | ✅ | https://github.com/rishiinirgude/Diasporacircle |
 | README | ✅ | This file |
-| 15+ commits | ✅ | 47+ commits — `git log --oneline` |
+| 15+ commits | ✅ | 53+ commits — `git log --oneline` |
 | Live demo | ✅ | https://frontend-coral-nine-24.vercel.app |
 | Backend API | ✅ | https://backend-nine-eta-58.vercel.app/health |
 | Circle Contract | ✅ | [CBQ5AFJ...](https://stellar.expert/explorer/testnet/contract/CBQ5AFJXUHHPTYZ2CREDNTS4E5NMJJHUKQBKITGY4FURHB4KCBGT3KR7) |
 | Reputation Contract | ✅ | [CDRBHNJ...](https://stellar.expert/explorer/testnet/contract/CDRBHNJZVNBKW2VO3FUAH6A6UBWMBTMURNS5LHUOL5GUJNCC2I5M5A7Y) |
 | Demo video | ⏳ | Recording in progress |
-| Feedback summary | ✅ | See User Testing section |
-| Wallet interactions | ✅ | 2 real users, real on-chain tx (see above) |
+| Feedback summary | ✅ | See User Testing section — 4.25/5 avg |
+| Wallet interactions | ✅ | 4 real users, real on-chain tx — [USER_PROOF.md](./USER_PROOF.md) |
 | Analytics setup | ✅ | `/api/analytics/summary` + JS error monitoring |
 | Full submission doc | ✅ | [SUBMISSION.md](./SUBMISSION.md) |
 
@@ -330,13 +330,14 @@ Events tracked automatically:
 
 | Link | Purpose |
 |------|---------|
+| **GitHub Repo** | https://github.com/rishiinirgude/Diasporacircle |
 | **Live Demo** | https://frontend-coral-nine-24.vercel.app |
 | **Backend API** | https://backend-nine-eta-58.vercel.app |
 | **Backend Health** | https://backend-nine-eta-58.vercel.app/health |
 | **Circle Contract** | https://stellar.expert/explorer/testnet/contract/CBQ5AFJXUHHPTYZ2CREDNTS4E5NMJJHUKQBKITGY4FURHB4KCBGT3KR7 |
 | **Reputation Contract** | https://stellar.expert/explorer/testnet/contract/CDRBHNJZVNBKW2VO3FUAH6A6UBWMBTMURNS5LHUOL5GUJNCC2I5M5A7Y |
-| **Stellar Expert** | https://stellar.expert/explorer/testnet |
-| **Submission Checklist** | [SUBMISSION.md](./SUBMISSION.md) |
+| **User Proof** | [USER_PROOF.md](./USER_PROOF.md) |
+| **Submission** | [SUBMISSION.md](./SUBMISSION.md) |
 
 ---
 
@@ -384,9 +385,8 @@ Built for diaspora communities worldwide to digitize traditional rotating saving
 
 ## 📧 Contact & Support
 
-- **Issues:** [GitHub Issues](https://github.com/your-org/diasporacircle/issues)
+- **Issues:** [GitHub Issues](https://github.com/rishiinirgude/Diasporacircle/issues)
 - **Email:** support@diasporacircle.dev
-- **Twitter:** [@diasporacircle](https://twitter.com/diasporacircle)
 
 ---
 
