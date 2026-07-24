@@ -175,14 +175,16 @@ curl https://backend-nine-eta-58.vercel.app/api/analytics/summary
 
 ## 👥 Real User Wallet Interactions (Proof)
 
-Minimum 2 real users onboarded on Stellar Testnet. Transactions verified on [Stellar Expert](https://stellar.expert/explorer/testnet).
+4 real users onboarded on Stellar Testnet. Full details in [USER_PROOF.md](./USER_PROOF.md).
 
-| # | Name | Wallet Address | Action | Transaction |
-|---|------|---------------|--------|-------------|
-| 1 | Rishi Nirgude | `GDTFEGG6CM4OPTVM4MTKDMY3JFBYQS6AQRMM5DVN36AYAYJXELMZYA5B` | Connected wallet + contributed | [4db83e8e...084fcc](https://stellar.expert/explorer/testnet/tx/4db83e8e4b09e056b80bfc541f0cb61d1a9f2b316abbe759847f299804084fcc) |
-| 2 | Sneha Bhambare | `GDG4K3RXV5RGEIJ4FKK3GU3CPVQLZZVZOCKREXEKSWTP4LQTAKQDSPFM` | Joined circle + contributed | [6c59e9a0...839bde](https://stellar.expert/explorer/testnet/tx/6c59e9a0881e92d5a5c7e87489ceb9eeb46dd6b6d4295668bde04b8f90839bde) |
+| # | Name | Wallet Address | Transaction | Status |
+|---|------|---------------|-------------|--------|
+| 1 | Rishi Nirgude | `GDTFEGG6CM4OPTVM4MTKDMY3JFBYQS6AQRMM5DVN36AYAYJXELMZYA5B` | [4db83e8e...](https://stellar.expert/explorer/testnet/tx/4db83e8e4b09e056b80bfc541f0cb61d1a9f2b316abbe759847f299804084fcc) | ✅ Confirmed |
+| 2 | Sneha Bhambare | `GDG4K3RXV5RGEIJ4FKK3GU3CPVQLZZVZOCKREXEKSWTP4LQTAKQDSPFM` | [6c59e9a0...](https://stellar.expert/explorer/testnet/tx/6c59e9a0881e92d5a5c7e87489ceb9eeb46dd6b6d4295668bde04b8f90839bde) | ✅ Confirmed |
+| 3 | Sarthak Jamadar | `GB6IZWMMCA5EGV7RHWVIUJ5NMIRSGNKZNLELSIAG73T752QQZPEMJ6UQ` | [8939d141...](https://stellar.expert/explorer/testnet/tx/8939d1416cdd72e8071236b6f005e1700dbee45eb4a7f8595388b876b284cff5) | ✅ Confirmed |
+| 4 | Swanand Zanpure | `GD5PNDAW7D7NOBYCIHWHWCZYEH344FJGVF4EFXEWJG3LULL3JOOANMKR` | [631e333a...](https://stellar.expert/explorer/testnet/tx/631e333a41fee8492924ef1d6f150b7aac61dc14423e16cfa2136dc409321ce6) | ✅ Confirmed |
 
-> All transactions are on **Stellar Testnet**. Verified at https://stellar.expert/explorer/testnet
+> All transactions on **Stellar Testnet** — verifiable at https://stellar.expert/explorer/testnet
 
 ---
 
@@ -248,38 +250,6 @@ Events tracked automatically:
 | Beta User 5 | ⭐⭐⭐ | Maybe | Probably |
 
 **Average: 4.2/5 · 80% would use · 80% recommend**
-
----
-
-## ✅ Checklist for Level 4 (Production MVP)
-
-- [x] **Production MVP** — Fully functional, stable, mobile responsive
-- [x] **User Onboarding** — Freighter wallet connect + profile completion flow
-- [x] **Wallet Interactions** — Event tracking on every wallet action
-- [x] **Product Quality** — Error handling, loading states, analytics, monitoring
-- [x] **Technical Standards** — Soroban contracts, 15+ commits, GitHub public
-- [x] **Documentation** — Complete README, ARCHITECTURE.md, DEPLOYMENT.md, API.md
-- [x] **Analytics** — Real-time event tracking + `/api/analytics/summary` endpoint
-- [x] **Error Monitoring** — JS error & promise rejection capture in main.tsx
-- [x] **Feedback Collection** — In-app `/feedback` page with star rating + form
-- [x] **Mobile Responsive** — Tailwind breakpoints throughout all pages
-
-### Submission Evidence
-
-| Item | Status | Link/Evidence |
-|------|--------|---------------|
-| Public GitHub repo | ✅ | https://github.com/rishiinirgude/Diasporacircle |
-| README | ✅ | This file |
-| 15+ commits | ✅ | 53+ commits — `git log --oneline` |
-| Live demo | ✅ | https://frontend-coral-nine-24.vercel.app |
-| Backend API | ✅ | https://backend-nine-eta-58.vercel.app/health |
-| Circle Contract | ✅ | [CBQ5AFJ...](https://stellar.expert/explorer/testnet/contract/CBQ5AFJXUHHPTYZ2CREDNTS4E5NMJJHUKQBKITGY4FURHB4KCBGT3KR7) |
-| Reputation Contract | ✅ | [CDRBHNJ...](https://stellar.expert/explorer/testnet/contract/CDRBHNJZVNBKW2VO3FUAH6A6UBWMBTMURNS5LHUOL5GUJNCC2I5M5A7Y) |
-| Demo video | ⏳ | Recording in progress |
-| Feedback summary | ✅ | See User Testing section — 4.25/5 avg |
-| Wallet interactions | ✅ | 4 real users, real on-chain tx — [USER_PROOF.md](./USER_PROOF.md) |
-| Analytics setup | ✅ | `/api/analytics/summary` + JS error monitoring |
-| Full submission doc | ✅ | [SUBMISSION.md](./SUBMISSION.md) |
 
 ---
 
