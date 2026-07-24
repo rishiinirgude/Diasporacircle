@@ -149,70 +149,27 @@ See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed instructions.
 
 ## 📱 Features & Screenshots
 
-### 1. **Landing Page** — Educational hero + how-it-works
-```
-┌─────────────────────────────────────────┐
-│  DiasporaCircle                 [Start] │
-├─────────────────────────────────────────┤
-│                                         │
-│  Your Savings Circle, On-Chain          │
-│  No trust required. Smart contracts     │
-│  secure your funds.                     │
-│                                         │
-│  [Connect Wallet]                       │
-│                                         │
-├─ How It Works (4 steps) ────────────────┤
-│  ✓ Create ✓ Invite ✓ Fund ✓ Collect    │
-├─ Why DiasporaCircle (Features) ────────┤
-│  ✓ Smart escrow ✓ No risk ✓ Anchors    │
-└─────────────────────────────────────────┘
-```
+### Product UI & Mobile Responsive Design
 
-### 2. **Dashboard** — My circles, status badges, quick actions
-```
-┌──────────────────────────────────────────────┐
-│  My Circles                        [+ New]   │
-├──────────────────────────────────────────────┤
-│  ┌──────────────┐  ┌──────────────┐          │
-│  │ Friends Fund │  │ Office Pool  │          │
-│  │ 3/3 members  │  │ 2/5 members  │          │
-│  │ [ACTIVE]     │  │ [PENDING]    │          │
-│  │ View Details │  │ View Details │          │
-│  └──────────────┘  └──────────────┘          │
-└──────────────────────────────────────────────┘
-```
+| | |
+|---|---|
+| ![UI 1](./screenshot/ui1.PNG) | ![UI 2](./screenshot/ui2.PNG) |
+| ![UI 3](./screenshot/ui3.PNG) | ![UI 4](./screenshot/ui4.PNG) |
 
-### 3. **Create Circle** — 3-step wizard
-```
-Step 1: Circle Details
-  - Name, Contribution Amount, Cycle Length
-  
-Step 2: Members
-  - Paste Stellar wallet addresses
-  
-Step 3: Review
-  - Confirm details, create contract
-```
+> All pages are fully responsive. Tested on mobile (320px+), tablet, and desktop.
 
-### 4. **Circle Detail** — Full view, contribute button
-```
-┌──────────────────────────────────────────┐
-│  Friends Fund                            │
-├──────────────────────────────────────────┤
-│  Status: ACTIVE                          │
-│  Cycle 1 / 3                             │
-│  Deadline: 30 days                       │
-│                                          │
-│  Recipients:                             │
-│  [ ] Alice (2/3 contributed)  [Donate]  │
-│  [✓] Bob   (paid)                        │
-│  [ ] Carol (pending)                     │
-│                                          │
-│  [Contribute] [View on Stellar Expert]  │
-└──────────────────────────────────────────┘
-```
+### Analytics & Monitoring Setup
 
-### 5. **Mobile Responsive** — All above on mobile (320px+)
+Events tracked automatically on every user action:
+- `wallet_connected` / `wallet_connect_failed`
+- `contribution_submitted` / `contribution_failed`
+- `circle_started` / `circle_detail_viewed`
+- `js_error` / `unhandled_promise_rejection`
+
+```bash
+# View live analytics
+curl https://backend-nine-eta-58.vercel.app/api/analytics/summary
+```
 
 ---
 
