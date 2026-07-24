@@ -25,7 +25,7 @@ export class AnchorService {
   static async getDepositUrl(
     anchorDomain: string,
     assetCode: string,
-    jwtToken: string
+    _jwtToken: string
   ): Promise<DepositUrl> {
     try {
       const config = ANCHOR_CONFIGS[anchorDomain];

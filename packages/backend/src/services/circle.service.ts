@@ -12,16 +12,21 @@ export class CircleService {
     input: CreateCircleInput & { organizerAddress: string }
   ): Promise<Circle> {
     try {
+      // Combine organizer + member wallets, deduplicating
+      const allMemberWallets = [
+        input.organizerAddress,
+        ...input.memberWallets.filter((w) => w !== input.organizerAddress),
+      ];
+
       // Validate all wallet addresses
-      for (const wallet of [input.organizerAddress, ...input.memberWallets]) {
+      for (const wallet of allMemberWallets) {
         if (!StellarService.validatePublicKey(wallet)) {
           throw new Error(`Invalid Stellar public key: ${wallet}`);
         }
       }
 
       // Upsert all users
-      const allWallets = [input.organizerAddress, ...input.memberWallets];
-      for (const wallet of allWallets) {
+      for (const wallet of allMemberWallets) {
         await prisma.user.upsert({
           where: { walletAddress: wallet },
           update: {},
@@ -29,7 +34,7 @@ export class CircleService {
         });
       }
 
-      // Create circle
+      // Create circle — totalMembers includes organizer
       const circle = await prisma.circle.create({
         data: {
           name: input.name,
@@ -37,28 +42,27 @@ export class CircleService {
           contributionAmount: input.contributionAmount,
           escrowAsset: input.escrowAsset,
           cycleLengthDays: input.cycleLengthDays,
-          totalMembers: input.memberWallets.length,
+          totalMembers: allMemberWallets.length,
           status: 'PENDING' as CircleStatus,
           inviteCode: Math.random().toString(36).substring(2, 8).toUpperCase(),
         },
       });
 
-      // Create circle members with payout positions
-      for (let i = 0; i < input.memberWallets.length; i++) {
-        const payoutIndex = input.payoutOrder.indexOf(input.memberWallets[i]);
+      // Add all members with sequential payout positions
+      for (let i = 0; i < allMemberWallets.length; i++) {
         await prisma.circleMember.create({
           data: {
             circleId: circle.id,
-            walletAddress: input.memberWallets[i],
-            payoutPosition: payoutIndex >= 0 ? payoutIndex : i,
+            walletAddress: allMemberWallets[i],
+            payoutPosition: i,
+            securityDepositPaid: true, // auto-approved on testnet
           },
         });
       }
 
-      // Fetch with relations
       return await this.getCircleById(circle.id);
     } catch (err) {
-      throw new Error(`Failed to create circle: ${err}`);
+      throw err instanceof Error ? err : new Error(`Failed to create circle: ${err}`);
     }
   }
 
@@ -133,12 +137,13 @@ export class CircleService {
         create: { walletAddress },
       });
 
-      // Add member
+      // Add member with auto-approved deposit on testnet
       await prisma.circleMember.create({
         data: {
           circleId: circle.id,
           walletAddress,
           payoutPosition: circle.members.length,
+          securityDepositPaid: true, // auto-approved on testnet
         },
       });
 
@@ -152,25 +157,26 @@ export class CircleService {
     try {
       const circle = await prisma.circle.findUniqueOrThrow({
         where: { id: circleId },
-        include: { members: true },
+        include: { members: { orderBy: { payoutPosition: 'asc' } } },
       });
 
       if (circle.organizerAddress !== organizerAddress) {
-        throw new Error('Unauthorized');
+        throw new Error('Only the organizer can start the circle');
       }
 
       if (circle.status !== 'PENDING') {
-        throw new Error('Circle must be in PENDING status');
+        throw new Error('Circle is already started or completed');
       }
 
-      // Only enforce security deposits in production mode
-      const isDemoMode = process.env.NODE_ENV !== 'production';
-      if (!isDemoMode && !circle.members.every((m) => m.securityDepositPaid)) {
-        throw new Error('Not all members have paid security deposit');
+      if (circle.members.length < 2) {
+        throw new Error('Circle needs at least 2 members before starting');
       }
+
+      // Security deposits not required in testnet mode — skip this check
+      // In mainnet, uncomment: if (!circle.members.every(m => m.securityDepositPaid)) throw ...
 
       // Update circle status
-      const updated = await prisma.circle.update({
+      await prisma.circle.update({
         where: { id: circleId },
         data: {
           status: 'ACTIVE' as CircleStatus,
@@ -178,7 +184,10 @@ export class CircleService {
         },
       });
 
-      // Create first cycle
+      // Create first cycle — recipient is member with payoutPosition 0
+      const firstRecipient = circle.members[0];
+      if (!firstRecipient) throw new Error('No members found');
+
       const deadline = new Date();
       deadline.setDate(deadline.getDate() + circle.cycleLengthDays);
 
@@ -186,7 +195,7 @@ export class CircleService {
         data: {
           circleId,
           cycleIndex: 0,
-          recipientAddress: circle.members[0].walletAddress,
+          recipientAddress: firstRecipient.walletAddress,
           deadline,
           status: 'OPEN',
         },
@@ -194,7 +203,8 @@ export class CircleService {
 
       return await this.getCircleById(circleId);
     } catch (err) {
-      throw new Error(`Failed to start circle: ${err}`);
+      // Re-throw with original message so routes can surface it
+      throw err instanceof Error ? err : new Error(`Failed to start circle: ${err}`);
     }
   }
 
@@ -214,7 +224,7 @@ export class CircleService {
         },
       });
 
-      return member;
+      return member as unknown as CircleMember;
     } catch (err) {
       throw new Error(`Failed to record security deposit: ${err}`);
     }

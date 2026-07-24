@@ -1,23 +1,17 @@
 import {
-  SorobanRpc,
   TransactionBuilder,
   BASE_FEE,
-  nativeToScVal,
-  scValToNative,
   Operation,
-  Address,
   Asset,
-  Keypair,
 } from '@stellar/stellar-sdk';
-import { sorobanRpc, networkPassphrase } from '../config/stellar';
-import { StellarService } from './stellar.service';
+import { networkPassphrase } from '../config/stellar';
 import { horizonServer } from '../config/stellar';
 
 export class SorobanService {
   /**
-   * Build a real XLM payment transaction for a circle contribution.
-   * The member pays the contribution amount to the circle organizer's address.
-   * This produces a real on-chain testnet transaction without needing a deployed contract instance.
+   * Build a real XLM payment transaction.
+   * Member pays contribution amount to the current cycle's recipient.
+   * Produces a real on-chain testnet transaction — no deployed contract instance needed.
    */
   static async buildContributeTransaction(
     memberPublicKey: string,
@@ -47,71 +41,21 @@ export class SorobanService {
     }
   }
 
-  static async submitSignedTransaction(signedXdr: string) {
+  static async submitSignedTransaction(signedXdr: string): Promise<{ hash: string; success: boolean }> {
     try {
-      // Try Soroban RPC first, fall back to Horizon
-      try {
-        const submitResult = await sorobanRpc.sendTransaction(signedXdr);
-        const hash = submitResult.hash;
-
-        if (submitResult.status === 'PENDING' || submitResult.status === 'TRY_AGAIN_LATER') {
-          const finalResult = await StellarService.pollForTransaction(hash);
-          return {
-            hash,
-            status: finalResult.status,
-            success: finalResult.status === SorobanRpc.Api.GetTransactionStatus.SUCCESS,
-          };
-        }
-
-        return {
-          hash,
-          status: submitResult.status,
-          success: submitResult.status === SorobanRpc.Api.GetTransactionStatus.SUCCESS,
-        };
-      } catch {
-        // Soroban RPC doesn't accept classic transactions — use Horizon
-        const result = await horizonServer.submitTransaction(signedXdr as any);
-        return {
-          hash: result.hash,
-          status: 'SUCCESS',
-          success: true,
-        };
-      }
-    } catch (err) {
-      throw new Error(`Failed to submit transaction: ${err}`);
-    }
-  }
-
-  static async getCircleConfig(contractId: string) {
-    try {
-      const account = await StellarService.getAccount(
-        process.env.BACKEND_PUBLIC_KEY || ''
-      );
-
-      const transaction = new TransactionBuilder(account, {
-        fee: BASE_FEE,
-        networkPassphrase,
-      })
-        .addOperation(
-          Operation.invokeContractFunction({
-            contract: contractId,
-            function: 'get_circle_config',
-            args: [],
-          })
-        )
-        .setTimeout(300)
-        .build();
-
-      const simResult = await sorobanRpc.simulateTransaction(transaction);
-
-      if (SorobanRpc.Api.isSimulationSuccess(simResult) && simResult.result) {
-        const retval = simResult.result.retval;
-        return scValToNative(retval);
-      }
-
-      throw new Error('Failed to get circle config');
-    } catch (err) {
-      throw new Error(`Failed to get circle config: ${err}`);
+      // Classic payment transactions must go through Horizon, not Soroban RPC
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const result = await horizonServer.submitTransaction(signedXdr as any);
+      return {
+        hash: result.hash,
+        success: true,
+      };
+    } catch (err: unknown) {
+      // Horizon returns detailed error in extras
+      const extras = (err as { response?: { data?: { extras?: { result_codes?: unknown } } } })
+        ?.response?.data?.extras;
+      const detail = extras ? JSON.stringify(extras.result_codes) : String(err);
+      throw new Error(`Transaction failed: ${detail}`);
     }
   }
 }

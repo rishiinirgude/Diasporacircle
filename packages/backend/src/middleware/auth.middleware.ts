@@ -8,12 +8,13 @@ export interface AuthRequest extends Request {
   };
 }
 
-export function walletAuthMiddleware(req: AuthRequest, res: Response, next: NextFunction) {
+export function walletAuthMiddleware(req: AuthRequest, res: Response, next: NextFunction): void {
   try {
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Missing or invalid authorization header' });
+      res.status(401).json({ error: 'Missing or invalid authorization header' });
+      return;
     }
 
     const token = authHeader.slice(7);

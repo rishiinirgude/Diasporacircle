@@ -55,8 +55,8 @@ export default function CreateCircle() {
         .split('\n')
         .map((w) => w.trim())
         .filter(Boolean);
-      if (wallets.length < 2) {
-        setError('At least 2 members required (excluding organizer)');
+      if (wallets.length < 1) {
+        setError('At least 1 other member required');
         return false;
       }
     }
@@ -229,13 +229,12 @@ export default function CreateCircle() {
                   value={formData.memberWallets}
                   onChange={handleInputChange}
                   placeholder="GXXXXXX...
-GYYYY...
-GZZZZ..."
+GYYYY..."
                   className="w-full border rounded px-4 py-2 h-40 focus:outline-none focus:ring-2 focus:ring-blue-600 font-mono text-sm"
                   required
                 />
                 <p className="text-xs text-gray-500 mt-1">
-                  One Stellar public key per line. These members will rotate receiving the pot.
+                  One Stellar public key per line. You (the organizer) are automatically added as a member.
                 </p>
               </div>
             </div>
@@ -270,8 +269,8 @@ GZZZZ..."
                       formData.memberWallets
                         .split('\n')
                         .map((w) => w.trim())
-                        .filter(Boolean).length
-                    }
+                        .filter(Boolean).length + 1
+                    } (including you)
                   </span>
                 </div>
               </div>

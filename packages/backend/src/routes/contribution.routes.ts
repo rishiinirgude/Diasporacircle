@@ -5,10 +5,6 @@ import { ContributionService } from '../services/contribution.service';
 
 const router = Router();
 
-const PrepareContributionSchema = z.object({
-  cycleId: z.string(),
-});
-
 const SubmitContributionSchema = z.object({
   signedXdr: z.string(),
   cycleIndex: z.number().int().min(0),

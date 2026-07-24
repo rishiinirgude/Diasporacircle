@@ -27,15 +27,15 @@ router.get('/', walletAuthMiddleware, async (req: AuthRequest, res: Response) =>
 });
 
 // Preview circle by invite code (no auth required) — must come BEFORE /:id
-router.get('/join/:inviteCode', async (req: AuthRequest, res: Response) => {
+router.get('/join/:inviteCode', async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    // Find circle by invite code
     const circle = await prisma.circle.findUnique({
       where: { inviteCode: req.params.inviteCode },
       include: { members: true },
     });
     if (!circle) {
-      return res.status(404).json({ error: 'Circle not found' });
+      res.status(404).json({ error: 'Circle not found' });
+      return;
     }
     res.json({
       id: circle.id,
@@ -78,20 +78,6 @@ router.post('/', walletAuthMiddleware, async (req: AuthRequest, res: Response) =
   }
 });
 
-// Join circle via invite code
-router.post('/join/:inviteCode', walletAuthMiddleware, async (req: AuthRequest, res: Response) => {
-  try {
-    const circle = await CircleService.joinCircle(
-      req.params.inviteCode,
-      req.user!.walletAddress
-    );
-    res.status(201).json(circle);
-  } catch (err) {
-    console.error('Join circle error:', err);
-    res.status(400).json({ error: 'Failed to join circle' });
-  }
-});
-
 // Start circle (organizer only)
 router.post('/:id/start', walletAuthMiddleware, async (req: AuthRequest, res: Response) => {
   try {
@@ -101,8 +87,24 @@ router.post('/:id/start', walletAuthMiddleware, async (req: AuthRequest, res: Re
     );
     res.json(circle);
   } catch (err) {
-    console.error('Start circle error:', err);
-    res.status(400).json({ error: 'Failed to start circle' });
+    const msg = err instanceof Error ? err.message : 'Failed to start circle';
+    console.error('Start circle error:', msg);
+    res.status(400).json({ error: msg });
+  }
+});
+
+// Join circle via invite code
+router.post('/join/:inviteCode', walletAuthMiddleware, async (req: AuthRequest, res: Response) => {
+  try {
+    const circle = await CircleService.joinCircle(
+      req.params.inviteCode,
+      req.user!.walletAddress
+    );
+    res.status(201).json(circle);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Failed to join circle';
+    console.error('Join circle error:', msg);
+    res.status(400).json({ error: msg });
   }
 });
 

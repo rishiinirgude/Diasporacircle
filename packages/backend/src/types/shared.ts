@@ -85,9 +85,8 @@ export interface ReputationProfile {
 }
 
 export interface ContributionSubmitResponse {
-  success: boolean;
   txHash: string;
-  message?: string;
+  explorerUrl: string;
 }
 
 export function computeTier(score: number): ReputationTier {
