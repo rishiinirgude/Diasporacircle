@@ -124,8 +124,8 @@ Full claim records: [USER_PROOF.md](./USER_PROOF.md)
 
 | Metric | Value |
 |--------|-------|
-| Total users | 4 |
-| Successful contributions | 4 |
+| Total users | 5 |
+| Successful contributions | 5 |
 | Success rate | 100% |
 | Period | July 2026 |
 
@@ -135,6 +135,7 @@ Full claim records: [USER_PROOF.md](./USER_PROOF.md)
 | 2 | Sneha Bhambare | `GDG4K3RX...SPFM` | [6c59e9a0...](https://stellar.expert/explorer/testnet/tx/6c59e9a0881e92d5a5c7e87489ceb9eeb46dd6b6d4295668bde04b8f90839bde) | ✅ Confirmed |
 | 3 | Sarthak Jamadar | `GB6IZWMM...J6UQ` | [8939d141...](https://stellar.expert/explorer/testnet/tx/8939d1416cdd72e8071236b6f005e1700dbee45eb4a7f8595388b876b284cff5) | ✅ Confirmed |
 | 4 | Swanand Zanpure | `GD5PNDAW...NMKR` | [631e333a...](https://stellar.expert/explorer/testnet/tx/631e333a41fee8492924ef1d6f150b7aac61dc14423e16cfa2136dc409321ce6) | ✅ Confirmed |
+| 5 | Om Ozharkar | `GCW5A3XB...MB7Q` | [b8ec6d9e...](https://stellar.expert/explorer/testnet/tx/b8ec6d9ed7f00003a9b2e327bcefdedfd7629ca980cc58958c85d301bd0c989d) | ✅ Confirmed |
 
 ---
 
@@ -144,8 +145,8 @@ Collected via in-app feedback form at `/feedback`.
 
 | Metric | Value |
 |--------|-------|
-| Responses | 4 |
-| Average rating | 4.25 / 5 |
+| Responses | 5 |
+| Average rating | 4.2 / 5 |
 | Would use again | 100% |
 | Would recommend | 100% |
 
@@ -155,6 +156,7 @@ Collected via in-app feedback form at `/feedback`.
 | 2 | Sneha Bhambare | ⭐⭐⭐⭐ | "Easy to join a circle and contribute" |
 | 3 | Sarthak Jamadar | ⭐⭐⭐⭐ | "Good concept, contribution flow worked well" |
 | 4 | Swanand Zanpure | ⭐⭐⭐⭐⭐ | "Liked the invite link feature, joined easily" |
+| 5 | Om Ozharkar | ⭐⭐⭐⭐ | "Smooth onboarding, contribution went through instantly" |
 
 ---
 
