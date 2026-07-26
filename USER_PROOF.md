@@ -13,7 +13,8 @@ This document proves real users onboarded and interacted with DiasporaCircle on 
 | 3 | Sarthak Jamadar | `GB6IZWMMCA5EGV7RHWVIUJ5NMIRSGNKZNLELSIAG73T752QQZPEMJ6UQ` | Joined circle + contributed | `8939d141...4cff5` | [View](https://stellar.expert/explorer/testnet/tx/8939d1416cdd72e8071236b6f005e1700dbee45eb4a7f8595388b876b284cff5) | ✅ Confirmed |
 | 4 | Swanand Zanpure | `GD5PNDAW7D7NOBYCIHWHWCZYEH344FJGVF4EFXEWJG3LULL3JOOANMKR` | Joined circle + contributed | `631e333a...21ce6` | [View](https://stellar.expert/explorer/testnet/tx/631e333a41fee8492924ef1d6f150b7aac61dc14423e16cfa2136dc409321ce6) | ✅ Confirmed |
 | 5 | Om Ozharkar | `GCW5A3XBNPB7YQT2OK6XS36D2BA25C5CQ5D7CMTTOUAPJXP3YDEZMB7Q` | Joined circle + contributed | `b8ec6d9e...c989d` | [View](https://stellar.expert/explorer/testnet/tx/b8ec6d9ed7f00003a9b2e327bcefdedfd7629ca980cc58958c85d301bd0c989d) | ✅ Confirmed |
-| 6 | _(pending)_ | — | — | — | — | ⏳ |
+| 6 | Kartik Botre | `GAW5QO2JPBTMQF2CWU3BBBI74ERAGLT3C5YVIKGNXPNVHYLFFДWTDSRN` | Joined circle + contributed | `5e8457a0...3ffca` | [View](https://stellar.expert/explorer/testnet/tx/5e8457a04710bd575b62e69a265e6cb9af81c51f2035e1a61ce315a7c4ae3ffca) | ✅ Confirmed |
+| 7 | _(pending)_ | — | — | — | — | ⏳ |
 | 7 | _(pending)_ | — | — | — | — | ⏳ |
 | 8 | _(pending)_ | — | — | — | — | ⏳ |
 | 9 | _(pending)_ | — | — | — | — | ⏳ |
@@ -51,8 +52,10 @@ This document proves real users onboarded and interacted with DiasporaCircle on 
 | 2 | Sneha Bhambare | ⭐⭐⭐⭐ | "Easy to join a circle and contribute" |
 | 3 | Sarthak Jamadar | ⭐⭐⭐⭐ | "Good concept, contribution flow worked well" |
 | 4 | Swanand Zanpure | ⭐⭐⭐⭐⭐ | "Liked the invite link feature, joined easily" |
+| 5 | Om Ozharkar | ⭐⭐⭐⭐ | "Smooth onboarding, contribution went through instantly" |
+| 6 | Kartik Botre | ⭐⭐⭐⭐ | "Simple interface, circle creation was straightforward" |
 
 ---
 
 **Last Updated:** 2026-07-26  
-**Status:** 5/10 users onboarded — collecting more testers
+**Status:** 6/10 users onboarded — collecting more testers

@@ -118,14 +118,14 @@ Stellar is **~1,000,000× cheaper** per contribution.
 
 ## 👥 User Onboarding & Proof of Usage
 
-### 4 Testnet Users Onboarded
+### 6 Testnet Users Onboarded
 
 Full claim records: [USER_PROOF.md](./USER_PROOF.md)
 
 | Metric | Value |
 |--------|-------|
-| Total users | 5 |
-| Successful contributions | 5 |
+| Total users | 6 |
+| Successful contributions | 6 |
 | Success rate | 100% |
 | Period | July 2026 |
 
@@ -136,6 +136,7 @@ Full claim records: [USER_PROOF.md](./USER_PROOF.md)
 | 3 | Sarthak Jamadar | `GB6IZWMM...J6UQ` | [8939d141...](https://stellar.expert/explorer/testnet/tx/8939d1416cdd72e8071236b6f005e1700dbee45eb4a7f8595388b876b284cff5) | ✅ Confirmed |
 | 4 | Swanand Zanpure | `GD5PNDAW...NMKR` | [631e333a...](https://stellar.expert/explorer/testnet/tx/631e333a41fee8492924ef1d6f150b7aac61dc14423e16cfa2136dc409321ce6) | ✅ Confirmed |
 | 5 | Om Ozharkar | `GCW5A3XB...MB7Q` | [b8ec6d9e...](https://stellar.expert/explorer/testnet/tx/b8ec6d9ed7f00003a9b2e327bcefdedfd7629ca980cc58958c85d301bd0c989d) | ✅ Confirmed |
+| 6 | Kartik Botre | `GAW5QO2J...DSRN` | [5e8457a0...](https://stellar.expert/explorer/testnet/tx/5e8457a04710bd575b62e69a265e6cb9af81c51f2035e1a61ce315a7c4ae3ffca) | ✅ Confirmed |
 
 ---
 
@@ -145,7 +146,7 @@ Collected via in-app feedback form at `/feedback`.
 
 | Metric | Value |
 |--------|-------|
-| Responses | 5 |
+| Responses | 6 |
 | Average rating | 4.2 / 5 |
 | Would use again | 100% |
 | Would recommend | 100% |
@@ -157,6 +158,7 @@ Collected via in-app feedback form at `/feedback`.
 | 3 | Sarthak Jamadar | ⭐⭐⭐⭐ | "Good concept, contribution flow worked well" |
 | 4 | Swanand Zanpure | ⭐⭐⭐⭐⭐ | "Liked the invite link feature, joined easily" |
 | 5 | Om Ozharkar | ⭐⭐⭐⭐ | "Smooth onboarding, contribution went through instantly" |
+| 6 | Kartik Botre | ⭐⭐⭐⭐ | "Simple interface, circle creation was straightforward" |
 
 ---
 
