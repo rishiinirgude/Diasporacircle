@@ -9,7 +9,7 @@ Trustless, on-chain rotating savings groups (ROSCA) on Stellar — smart contrac
 | Resource | Link |
 |----------|------|
 | **Live Application** | https://frontend-coral-nine-24.vercel.app |
-| **Demo Video** | _(recording in progress)_ |
+| **Demo Video** | [Watch on Loom](https://www.loom.com/share/8c0890d16d30406facfc4840fbe558b7) |
 | **Circle Contract (Testnet)** | `CBQ5AFJXUHHPTYZ2CREDNTS4E5NMJJHUKQBKITGY4FURHB4KCBGT3KR7` |
 | **Reputation Contract (Testnet)** | `CDRBHNJZVNBKW2VO3FUAH6A6UBWMBTMURNS5LHUOL5GUJNCC2I5M5A7Y` |
 | **User Proof** | [USER_PROOF.md](./USER_PROOF.md) |
@@ -112,7 +112,7 @@ Stellar is **~1,000,000× cheaper** per contribution.
 | Reputation Contract Explorer | [View on Stellar Expert](https://stellar.expert/explorer/testnet/contract/CDRBHNJZVNBKW2VO3FUAH6A6UBWMBTMURNS5LHUOL5GUJNCC2I5M5A7Y) |
 
 ### Demo Video
-📹 _(Recording in progress — full walkthrough of circle creation, member join, contribution, and disbursement)_
+📹 [Watch the full demo on Loom](https://www.loom.com/share/8c0890d16d30406facfc4840fbe558b7) — walkthrough of circle creation, member join, contribution, and disbursement.
 
 ---
 

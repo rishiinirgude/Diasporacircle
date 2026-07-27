@@ -8,7 +8,7 @@
 | **Live Demo** | https://frontend-coral-nine-24.vercel.app |
 | **Backend API** | https://backend-nine-eta-58.vercel.app |
 | **Backend Health** | https://backend-nine-eta-58.vercel.app/health |
-| **Demo Video** | _(recording in progress)_ |
+| **Demo Video** | [Watch on Loom](https://www.loom.com/share/8c0890d16d30406facfc4840fbe558b7) |
 | **Circle Contract** | `CBQ5AFJXUHHPTYZ2CREDNTS4E5NMJJHUKQBKITGY4FURHB4KCBGT3KR7` |
 | **Reputation Contract** | `CDRBHNJZVNBKW2VO3FUAH6A6UBWMBTMURNS5LHUOL5GUJNCC2I5M5A7Y` |
 | **Stellar Expert (Circle)** | https://stellar.expert/explorer/testnet/contract/CBQ5AFJXUHHPTYZ2CREDNTS4E5NMJJHUKQBKITGY4FURHB4KCBGT3KR7 |
