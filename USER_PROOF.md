@@ -14,9 +14,8 @@ This document proves real users onboarded and interacted with DiasporaCircle on 
 | 4 | Swanand Zanpure | `GD5PNDAW7D7NOBYCIHWHWCZYEH344FJGVF4EFXEWJG3LULL3JOOANMKR` | Joined circle + contributed | `631e333a...21ce6` | [View](https://stellar.expert/explorer/testnet/tx/631e333a41fee8492924ef1d6f150b7aac61dc14423e16cfa2136dc409321ce6) | ✅ Confirmed |
 | 5 | Om Ozharkar | `GCW5A3XBNPB7YQT2OK6XS36D2BA25C5CQ5D7CMTTOUAPJXP3YDEZMB7Q` | Joined circle + contributed | `b8ec6d9e...c989d` | [View](https://stellar.expert/explorer/testnet/tx/b8ec6d9ed7f00003a9b2e327bcefdedfd7629ca980cc58958c85d301bd0c989d) | ✅ Confirmed |
 | 6 | Kartik Botre | `GAW5QO2JPBTMQF2CWU3BBBI74ERAGLT3C5YVIKGNXPNVHYLFFДWTDSRN` | Joined circle + contributed | `5e8457a0...3ffca` | [View](https://stellar.expert/explorer/testnet/tx/5e8457a04710bd575b62e69a265e6cb9af81c51f2035e1a61ce315a7c4ae3ffca) | ✅ Confirmed |
-| 7 | _(pending)_ | — | — | — | — | ⏳ |
-| 7 | _(pending)_ | — | — | — | — | ⏳ |
-| 8 | _(pending)_ | — | — | — | — | ⏳ |
+| 7 | Mayur Vanve | `GAK5BJWJ2IDEMYBDDJOHUITKCKM5YP33GP435CZ4GKJGRD2RLTMBIHY` | Joined circle + contributed | `94f79922...d8f21` | [View](https://stellar.expert/explorer/testnet/tx/94f79922fe67ced4f67e6e8bf00e55c7c632b2498b9a6801993fc99d632d8f21) | ✅ Confirmed |
+| 8 | Sai Jagdale | `GAORPN5PV3BK4DLYYH2PJU6HF2MTZET7PYR7VB7X4SWGXINCH5SI5ZSW` | Joined circle + contributed | `964a4db3...a3d5` | [View](https://stellar.expert/explorer/testnet/tx/964a4db34ef8251ad65888c1eaa01d4281d0fa8548075d41394ad27039e5a3d5) | ✅ Confirmed |
 | 9 | _(pending)_ | — | — | — | — | ⏳ |
 | 10 | _(pending)_ | — | — | — | — | ⏳ |
 
@@ -54,8 +53,10 @@ This document proves real users onboarded and interacted with DiasporaCircle on 
 | 4 | Swanand Zanpure | ⭐⭐⭐⭐⭐ | "Liked the invite link feature, joined easily" |
 | 5 | Om Ozharkar | ⭐⭐⭐⭐ | "Smooth onboarding, contribution went through instantly" |
 | 6 | Kartik Botre | ⭐⭐⭐⭐ | "Simple interface, circle creation was straightforward" |
+| 7 | Mayur Vanve | ⭐⭐⭐⭐ | "Invite link worked perfectly, joined in seconds" |
+| 8 | Sai Jagdale | ⭐⭐⭐⭐⭐ | "Love the on-chain transparency, great for community savings" |
 
 ---
 
 **Last Updated:** 2026-07-26  
-**Status:** 6/10 users onboarded — collecting more testers
+**Status:** 8/10 users onboarded — 2 more needed
