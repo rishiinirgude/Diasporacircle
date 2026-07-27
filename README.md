@@ -118,14 +118,14 @@ Stellar is **~1,000,000× cheaper** per contribution.
 
 ## 👥 User Onboarding & Proof of Usage
 
-### 8 Testnet Users Onboarded
+### 9 Testnet Users Onboarded
 
 Full claim records: [USER_PROOF.md](./USER_PROOF.md)
 
 | Metric | Value |
 |--------|-------|
-| Total users | 8 |
-| Successful contributions | 8 |
+| Total users | 9 |
+| Successful contributions | 9 |
 | Success rate | 100% |
 | Period | July 2026 |
 
@@ -139,6 +139,7 @@ Full claim records: [USER_PROOF.md](./USER_PROOF.md)
 | 6 | Kartik Botre | `GAW5QO2J...DSRN` | [5e8457a0...](https://stellar.expert/explorer/testnet/tx/5e8457a04710bd575b62e69a265e6cb9af81c51f2035e1a61ce315a7c4ae3ffca) | ✅ Confirmed |
 | 7 | Mayur Vanve | `GAK5BJWJ...IHY` | [94f79922...](https://stellar.expert/explorer/testnet/tx/94f79922fe67ced4f67e6e8bf00e55c7c632b2498b9a6801993fc99d632d8f21) | ✅ Confirmed |
 | 8 | Sai Jagdale | `GAORPN5P...SZSW` | [964a4db3...](https://stellar.expert/explorer/testnet/tx/964a4db34ef8251ad65888c1eaa01d4281d0fa8548075d41394ad27039e5a3d5) | ✅ Confirmed |
+| 9 | Prathamesh Hosamani | `GB5OQ76L...R7M7` | [2e9c01e6...](https://stellar.expert/explorer/testnet/tx/2e9c01e638acad412dadd3007681e30bc0195338d4b4a95d15a474d646c1d084) | ✅ Confirmed |
 
 ---
 
@@ -148,7 +149,7 @@ Collected via in-app feedback form at `/feedback`.
 
 | Metric | Value |
 |--------|-------|
-| Responses | 8 |
+| Responses | 9 |
 | Average rating | 4.3 / 5 |
 | Would use again | 100% |
 | Would recommend | 100% |
