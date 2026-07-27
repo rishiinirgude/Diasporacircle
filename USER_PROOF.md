@@ -17,7 +17,7 @@ This document proves real users onboarded and interacted with DiasporaCircle on 
 | 7 | Mayur Vanve | `GAK5BJWJ2IDEMYBDDJOHUITKCKM5YP33GP435CZ4GKJGRD2RLTMBIHY` | Joined circle + contributed | `94f79922...d8f21` | [View](https://stellar.expert/explorer/testnet/tx/94f79922fe67ced4f67e6e8bf00e55c7c632b2498b9a6801993fc99d632d8f21) | ✅ Confirmed |
 | 8 | Sai Jagdale | `GAORPN5PV3BK4DLYYH2PJU6HF2MTZET7PYR7VB7X4SWGXINCH5SI5ZSW` | Joined circle + contributed | `964a4db3...a3d5` | [View](https://stellar.expert/explorer/testnet/tx/964a4db34ef8251ad65888c1eaa01d4281d0fa8548075d41394ad27039e5a3d5) | ✅ Confirmed |
 | 9 | Prathamesh Hosamani | `GB5OQ76LTX5IBZESSXFMZKGDVPUUPUJGC7LKPRCRPAUI2WC3CMCMR7M7` | Joined circle + contributed | `2e9c01e6...d084` | [View](https://stellar.expert/explorer/testnet/tx/2e9c01e638acad412dadd3007681e30bc0195338d4b4a95d15a474d646c1d084) | ✅ Confirmed |
-| 10 | _(pending)_ | — | — | — | — | ⏳ |
+| 10 | Pradish Nair | `GBC645K7Q65J6YGJRGWDG75CNDQUOATYQ6QEIGMVCGWT77CSU5D2NOZB` | Joined circle + contributed | `065a1e06...8e87` | [View](https://stellar.expert/explorer/testnet/tx/065a1e0605b99e2207f640db7bbd435a3f193028d31adcbc8dbced5bf0818e87) | ✅ Confirmed |
 
 ---
 
@@ -56,8 +56,9 @@ This document proves real users onboarded and interacted with DiasporaCircle on 
 | 7 | Mayur Vanve | ⭐⭐⭐⭐ | "Invite link worked perfectly, joined in seconds" |
 | 8 | Sai Jagdale | ⭐⭐⭐⭐⭐ | "Love the on-chain transparency, great for community savings" |
 | 9 | Prathamesh Hosamani | ⭐⭐⭐⭐ | "Joining via invite link was seamless, contribution confirmed instantly" |
+| 10 | Pradish Nair | ⭐⭐⭐⭐⭐ | "Great concept, on-chain savings circle works exactly as described" |
 
 ---
 
 **Last Updated:** 2026-07-26  
-**Status:** 9/10 users onboarded — 1 more needed ✅
+**Status:** ✅ 10/10 users onboarded — requirement complete!
