@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { z } from 'zod';
+import { prisma } from '../config/db';
 
 const router = Router();
 
@@ -76,6 +77,28 @@ router.get('/feedback', (_req: Request, res: Response) => {
     count: feedbackEntries.length,
     entries: feedbackEntries,
   });
+});
+
+// Get all registered users from DB (admin view)
+router.get('/users', async (_req: Request, res: Response): Promise<void> => {
+  try {
+    const users = await prisma.user.findMany({
+      orderBy: { createdAt: 'desc' },
+      select: {
+        walletAddress: true,
+        displayName: true,
+        country: true,
+        email: true,
+        createdAt: true,
+        _count: {
+          select: { memberships: true, contributions: true },
+        },
+      },
+    });
+    res.json({ count: users.length, users });
+  } catch {
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
 });
 
 export const analyticsRoutes = router;
